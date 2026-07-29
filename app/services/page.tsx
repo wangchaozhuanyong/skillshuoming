@@ -17,7 +17,7 @@ export default function ServicesPage() {
         </p>
 
         <div className="service-grid">
-          <article>
+          <article id="api">
             <span>服务 A</span>
             <h2>AI 接口中转</h2>
             <p>
@@ -27,7 +27,7 @@ export default function ServicesPage() {
               待配置真实地址
             </button>
           </article>
-          <article>
+          <article id="subscription">
             <span>服务 B</span>
             <h2>AI 订阅协助</h2>
             <p>

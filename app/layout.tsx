@@ -68,8 +68,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const themeScript = `
+    try {
+      var savedTheme = localStorage.getItem("skill-start-theme");
+      document.documentElement.dataset.theme = savedTheme || "light";
+    } catch (_) {
+      document.documentElement.dataset.theme = "light";
+    }
+  `;
+
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <a className="skip-link" href="#main-content">
           跳到主要内容

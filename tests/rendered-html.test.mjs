@@ -47,9 +47,9 @@ test("server-renders the finished homepage with production metadata", async () =
 
   const html = await response.text();
   assert.match(html, /技能开工站/);
-  assert.match(html, /不用学术语/);
+  assert.match(html, /30 秒找到能用的 Skill/);
   assert.match(html, /帮我找 Skill/);
-  assert.match(html, /\d+(?:<!-- -->)? 个精选条目/);
+  assert.match(html, /已核验 Skill/);
   assert.match(html, /https:\/\/skill-start\.example\/og\.png/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|Building your site/);
 });
@@ -61,6 +61,10 @@ test("renders the directory, detail, workbench, and guide routes", async () => {
     ["/skills/baoyu-xhs-images", /小红书图卡生成/],
     ["/workbench", /Codex 能执行的任务单/],
     ["/guide", /先弄懂三件事/],
+    ["/categories", /12 个工作方向/],
+    ["/rankings", /热门不等于最好/],
+    ["/updates", /更新讲人话/],
+    ["/library", /我的 Skill 清单/],
   ];
 
   for (const [path, expected] of routes) {
@@ -76,7 +80,9 @@ test("keeps responsive and accessibility rules in the finished stylesheet", asyn
   assert.match(css, /:focus-visible/);
   assert.match(css, /@media \(max-width: 760px\)/);
   assert.match(css, /prefers-reduced-motion/);
-  assert.doesNotMatch(css, /#020617|purple|blue-purple/i);
+  assert.match(css, /\[data-theme="dark"\]/);
+  assert.match(css, /\.mobile-bottom-nav/);
+  assert.match(css, /\.tool-mosaic/);
 });
 
 test("ships the branded social image and removes starter files", async () => {

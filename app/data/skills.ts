@@ -49,6 +49,12 @@ export const categories = [
     aliases: ["图片", "海报", "封面", "设计", "figma"],
   },
   {
+    name: "视频音频",
+    short: "分镜、字幕、配音与剪辑",
+    symbol: "影",
+    aliases: ["视频", "音频", "字幕", "配音", "剪辑"],
+  },
+  {
     name: "网站与产品",
     short: "建站、测试、产品交付",
     symbol: "站",
@@ -71,6 +77,24 @@ export const categories = [
     short: "代码、测试、修复问题",
     symbol: "码",
     aliases: ["代码", "bug", "开发", "测试", "部署"],
+  },
+  {
+    name: "研究学习",
+    short: "论文、资料、翻译与总结",
+    symbol: "研",
+    aliases: ["论文", "研究", "学习", "翻译", "资料"],
+  },
+  {
+    name: "商业管理",
+    short: "市场、销售、客服与项目",
+    symbol: "商",
+    aliases: ["商业", "市场", "销售", "客服", "项目管理"],
+  },
+  {
+    name: "安全质量",
+    short: "权限、密钥、依赖与审查",
+    symbol: "安",
+    aliases: ["安全", "质量", "密钥", "权限", "审查"],
   },
   {
     name: "Skill 工具",

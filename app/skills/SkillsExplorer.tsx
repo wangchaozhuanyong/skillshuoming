@@ -141,7 +141,7 @@ export function SkillsExplorer({
         <div className="container directory-hero-layout">
           <div>
             <p className="eyebrow">Skill 中文目录</p>
-            <h1>用工作目标来搜，别被英文名难住</h1>
+            <h1>用工作目标来搜，不用记英文名</h1>
             <p>
               当前首发条目来自 OpenAI 官方插件仓库和已核验的公开社区仓库。本站不展示虚构安装量。
             </p>

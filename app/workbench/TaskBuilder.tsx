@@ -201,6 +201,12 @@ ${recommendedNames}
           <p>
             这个工具不会调用模型，也不会把内容上传到本站服务器。生成结果只在当前浏览器中处理。
           </p>
+          <nav className="workbench-switcher" aria-label="AI 工作台工具">
+            <span className="active">任务单生成器</span>
+            <Link href="/guide#safety">GitHub 体检方法</Link>
+            <Link href="/categories">Skill 最小组合</Link>
+            <Link href="/library">我的 Skill 清单</Link>
+          </nav>
         </div>
       </section>
 
