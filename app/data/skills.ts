@@ -427,32 +427,6 @@ export const skills: SkillEntry[] = [
       "请使用 build-web-apps 插件，先审计当前项目并给出最小修改计划。不要改支付、登录、数据库结构或生产配置；实现后运行现有检查。",
     installNote: "涉及支付、登录、数据库与部署时，必须逐项确认范围和权限。",
   },
-  {
-    slug: "openai-google-slides",
-    name: "google-slides",
-    chineseName: "Google 幻灯片工作流",
-    summary: "根据资料创建、整理和检查 Google Slides 演示文稿。",
-    category: "办公文档",
-    kind: "插件内 Skill",
-    sourceType: "OpenAI 官方",
-    repository: "openai/plugins",
-    githubUrl:
-      "https://github.com/openai/plugins/tree/main/plugins/google-slides",
-    difficulty: "需要基础配置",
-    risk: "需留意",
-    tags: ["PPT", "Google Slides", "汇报"],
-    aliases: ["做ppt", "幻灯片", "slides", "演示文稿"],
-    audience: "销售、培训、管理者与内容团队",
-    output: "Google Slides 演示文稿",
-    canDo: ["根据资料规划页结构", "创建或编辑幻灯片", "检查内容完整性"],
-    cannotDo: ["不能访问未授权文件", "不能替你确认所有品牌或版权要求"],
-    requirements: ["在支持插件的表面安装", "连接 Google 账号并授权对应文件"],
-    permissions: ["读取授权文件", "按任务写入幻灯片", "受 Google 账号权限限制"],
-    prompt:
-      "请使用 Google Slides 插件，把 brief.md 做成 10 页中文销售演示。先给页纲，不要编造客户数据；完成后检查每页文字密度和引用来源。",
-    installNote: "使用最小文件权限；涉及客户资料时先确认可否上传到第三方服务。",
-    featured: true,
-  },
 ];
 
 export const featuredSkills = skills.filter((skill) => skill.featured);

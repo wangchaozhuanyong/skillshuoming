@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { ChevronDown, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSkillBySlug, skills } from "../../data/skills";
 import { CopyActions } from "./CopyActions";
+import { RecentSkillTracker } from "./RecentSkillTracker";
 
 type Params = Promise<{ slug: string }>;
 
@@ -21,7 +23,7 @@ export async function generateMetadata({
 
   return {
     title: `${skill.chineseName}怎么用`,
-    description: `${skill.summary} 查看安装要求、权限提示、使用边界和可复制的 Codex 任务说明。`,
+    description: `${skill.summary} 查看 GitHub 来源、安装要求、权限提示和可复制的使用话术。`,
   };
 }
 
@@ -48,6 +50,7 @@ export default async function SkillDetailPage({ params }: { params: Params }) {
 
   return (
     <main id="main-content" className="detail-page">
+      <RecentSkillTracker slug={skill.slug} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -89,18 +92,22 @@ export default async function SkillDetailPage({ params }: { params: Params }) {
                 <dt>会得到什么</dt>
                 <dd>{skill.output}</dd>
               </div>
-              <div>
-                <dt>来源状态</dt>
-                <dd>公开仓库已核验，未作完整安全审计</dd>
-              </div>
             </dl>
+            <details className="source-details">
+              <summary>
+                来源状态
+                <ChevronDown aria-hidden="true" size={16} />
+              </summary>
+              <p>公开来源链接已核验，未作完整安全审计。</p>
+            </details>
             <a
               href={skill.githubUrl}
               target="_blank"
               rel="noreferrer"
               className="source-link"
             >
-              打开 GitHub 源地址 <span>↗</span>
+              打开 GitHub 源地址
+              <ExternalLink aria-hidden="true" size={15} />
             </a>
           </aside>
         </section>
@@ -141,54 +148,66 @@ export default async function SkillDetailPage({ params }: { params: Params }) {
             </section>
 
             <section className="permission-section">
-              <div>
-                <p className="section-index">04</p>
-                <h2>权限与风险提示</h2>
-                <p>
-                  这些提示来自仓库公开说明与用途判断，不等于安全认证。安装前仍要查看
-                  `SKILL.md`、脚本和依赖。
-                </p>
-              </div>
-              <ul>
-                {skill.permissions.map((item) => (
-                  <li key={item}>
-                    <span aria-hidden="true">!</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              <details className="detail-disclosure" open>
+                <summary>
+                  <span className="section-index">04</span>
+                  <h2>权限与风险提示</h2>
+                  <ChevronDown aria-hidden="true" size={20} />
+                </summary>
+                <div className="detail-disclosure-body">
+                  <p>
+                    这些提示来自仓库公开说明与用途判断，不等于安全认证。安装前仍要查看
+                    `SKILL.md`、脚本和依赖。
+                  </p>
+                  <ul>
+                    {skill.permissions.map((item) => (
+                      <li key={item}>
+                        <span aria-hidden="true">!</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </details>
             </section>
 
             <section>
-              <p className="section-index">05</p>
-              <h2>安装方式</h2>
-              {skill.installCommand ? (
-                <div className="code-block">
-                  <div>
-                    <span>Codex 本地安装</span>
-                    <small>请先查看仓库说明</small>
-                  </div>
-                  <code>{skill.installCommand}</code>
+              <details className="detail-disclosure" open>
+                <summary>
+                  <span className="section-index">05</span>
+                  <h2>安装方式</h2>
+                  <ChevronDown aria-hidden="true" size={20} />
+                </summary>
+                <div className="detail-disclosure-body">
+                  {skill.installCommand ? (
+                    <div className="code-block">
+                      <div>
+                        <span>高级用户参考命令</span>
+                        <small>执行前先查看 GitHub 仓库说明</small>
+                      </div>
+                      <code>{skill.installCommand}</code>
+                    </div>
+                  ) : skill.builtIn ? (
+                    <div className="install-callout">
+                      <strong>这是 Codex 系统内置 Skill</strong>
+                      <p>
+                        无需再次安装。直接在 Codex 中输入
+                        <code>$skill-installer</code>
+                        ，再说明你要列出或安装哪个 Skill。
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="install-callout">
+                      <strong>这是插件内 Skill</strong>
+                      <p>
+                        请在支持插件的 ChatGPT 桌面端或 Codex CLI
+                        中打开插件目录，根据产品提示安装并连接所需服务。
+                      </p>
+                    </div>
+                  )}
+                  <p className="detail-note">{skill.installNote}</p>
                 </div>
-              ) : skill.builtIn ? (
-                <div className="install-callout">
-                  <strong>这是 Codex 系统内置 Skill</strong>
-                  <p>
-                    无需再次安装。直接在 Codex 中输入
-                    <code>$skill-installer</code>
-                    ，再说明你要列出或安装哪个 Skill。
-                  </p>
-                </div>
-              ) : (
-                <div className="install-callout">
-                  <strong>这是插件内 Skill</strong>
-                  <p>
-                    请在支持插件的 ChatGPT 桌面端或 Codex CLI
-                    中打开插件目录，根据产品提示安装并连接所需服务。
-                  </p>
-                </div>
-              )}
-              <p className="detail-note">{skill.installNote}</p>
+              </details>
             </section>
 
             <section>
@@ -196,6 +215,7 @@ export default async function SkillDetailPage({ params }: { params: Params }) {
               <h2>复制后直接用的话术</h2>
               <blockquote className="prompt-block">{skill.prompt}</blockquote>
               <CopyActions
+                githubUrl={skill.githubUrl}
                 installCommand={skill.installCommand}
                 prompt={skill.prompt}
                 slug={skill.slug}

@@ -1,7 +1,17 @@
 "use client";
 
+import {
+  ArrowLeft,
+  ArrowRight,
+  ClipboardCheck,
+  Copy,
+  Files,
+  ShieldCheck,
+  Sparkles,
+  Target,
+} from "lucide-react";
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { buildSearchText, getSkillBySlug, skills } from "../data/skills";
 
 type TaskBuilderProps = {
@@ -18,6 +28,8 @@ type FormState = {
   requireCheck: boolean;
 };
 
+type MobileStep = 1 | 2 | 3;
+
 const defaultForm: FormState = {
   goal: "把月度销售数据整理成一份适合管理层阅读的汇报",
   input: "sales.xlsx，包含订单日期、客户、产品、含税金额和区域",
@@ -31,11 +43,11 @@ const defaultForm: FormState = {
 const recommendationRules = [
   {
     terms: ["excel", "表格", "公式", "销售", "数据"],
-    slugs: ["spreadsheet-formula-helper", "openai-google-slides"],
+    slugs: ["spreadsheet-formula-helper", "paperjsx"],
   },
   {
     terms: ["ppt", "汇报", "演示", "幻灯片"],
-    slugs: ["openai-google-slides", "paperjsx"],
+    slugs: ["paperjsx"],
   },
   {
     terms: ["小红书", "图卡"],
@@ -114,6 +126,39 @@ export function TaskBuilder({ initialSkill }: TaskBuilderProps) {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">(
     "idle",
   );
+  const [mobileStep, setMobileStep] = useState<MobileStep>(1);
+  const [mobileView, setMobileView] = useState<"form" | "result">("form");
+  const outputRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (initialSkill) return;
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = JSON.parse(
+          window.localStorage.getItem("skill-start-last-task") ?? "null",
+        ) as Partial<FormState> | null;
+        if (!saved?.goal) return;
+        setForm((current) => ({ ...current, ...saved }));
+      } catch {
+        // A malformed local draft should not block the task builder.
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [initialSkill]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(
+          "skill-start-last-task",
+          JSON.stringify({ ...form, savedAt: new Date().toISOString() }),
+        );
+      } catch {
+        // Draft persistence is optional.
+      }
+    }, 280);
+    return () => window.clearTimeout(timer);
+  }, [form]);
 
   const recommendations = useMemo(
     () => recommendSkills(form.goal, initialSkill),
@@ -170,6 +215,11 @@ ${recommendedNames}
 
     setGenerated(task);
     setCopyState("idle");
+    setMobileView("result");
+    window.setTimeout(() => {
+      outputRef.current?.focus();
+      outputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
 
     try {
       window.localStorage.setItem(
@@ -203,7 +253,7 @@ ${recommendedNames}
           </p>
           <nav className="workbench-switcher" aria-label="AI 工作台工具">
             <span className="active">任务单生成器</span>
-            <Link href="/guide#safety">GitHub 体检方法</Link>
+            <Link href="/guide#safety">Skill 安全检查教程</Link>
             <Link href="/categories">Skill 最小组合</Link>
             <Link href="/library">我的 Skill 清单</Link>
           </nav>
@@ -211,7 +261,12 @@ ${recommendedNames}
       </section>
 
       <section className="container task-builder">
-        <form className="task-form" onSubmit={buildTask}>
+        <form
+          className={`task-form ${
+            mobileView === "result" ? "mobile-view-hidden" : ""
+          }`}
+          onSubmit={buildTask}
+        >
           <div className="form-heading">
             <span>01</span>
             <div>
@@ -220,119 +275,193 @@ ${recommendedNames}
             </div>
           </div>
 
-          <label>
-            <span>任务目标</span>
-            <textarea
-              required
-              value={form.goal}
-              onChange={(event) => update("goal", event.target.value)}
-              rows={3}
-            />
-          </label>
+          <nav className="task-stepper" aria-label="任务单填写步骤">
+            {[
+              { step: 1 as const, label: "任务目标", icon: Target },
+              { step: 2 as const, label: "输入输出", icon: Files },
+              { step: 3 as const, label: "权限验收", icon: ShieldCheck },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.step}
+                  type="button"
+                  className={mobileStep === item.step ? "active" : ""}
+                  aria-current={mobileStep === item.step ? "step" : undefined}
+                  onClick={() => setMobileStep(item.step)}
+                >
+                  <Icon aria-hidden="true" size={17} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
 
-          <div className="field-grid">
+          <div className="task-step" data-step="1" data-active={mobileStep === 1}>
             <label>
-              <span>输入资料</span>
+              <span>任务目标</span>
               <textarea
                 required
-                value={form.input}
-                onChange={(event) => update("input", event.target.value)}
-                rows={4}
+                value={form.goal}
+                onChange={(event) => update("goal", event.target.value)}
+                rows={3}
               />
             </label>
+            <div className="step-summary-card">
+              <Target aria-hidden="true" size={18} />
+              <p>
+                <strong>先写结果，不用写专业 Prompt</strong>
+                <span>例如：整理销售数据并生成管理层汇报。</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="task-step" data-step="2" data-active={mobileStep === 2}>
+            <div className="field-grid">
+              <label>
+                <span>输入资料</span>
+                <textarea
+                  required
+                  value={form.input}
+                  onChange={(event) => update("input", event.target.value)}
+                  rows={4}
+                />
+              </label>
+              <label>
+                <span>最终交付</span>
+                <textarea
+                  required
+                  value={form.output}
+                  onChange={(event) => update("output", event.target.value)}
+                  rows={4}
+                />
+              </label>
+            </div>
+
             <label>
-              <span>最终交付</span>
+              <span>风格与特殊要求</span>
               <textarea
-                required
-                value={form.output}
-                onChange={(event) => update("output", event.target.value)}
-                rows={4}
+                value={form.style}
+                onChange={(event) => update("style", event.target.value)}
+                rows={3}
               />
             </label>
           </div>
 
-          <label>
-            <span>风格与特殊要求</span>
-            <textarea
-              value={form.style}
-              onChange={(event) => update("style", event.target.value)}
-              rows={3}
-            />
-          </label>
+          <div className="task-step" data-step="3" data-active={mobileStep === 3}>
+            <fieldset className="permission-options">
+              <legend>执行权限</legend>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={form.allowNetwork}
+                  onChange={(event) =>
+                    update("allowNetwork", event.target.checked)
+                  }
+                />
+                <span>
+                  <strong>允许联网</strong>
+                  <small>搜索资料或访问公开网页</small>
+                </span>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={form.allowModify}
+                  onChange={(event) =>
+                    update("allowModify", event.target.checked)
+                  }
+                />
+                <span>
+                  <strong>允许修改原文件</strong>
+                  <small>仍要求先创建可恢复副本</small>
+                </span>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={form.requireCheck}
+                  onChange={(event) =>
+                    update("requireCheck", event.target.checked)
+                  }
+                />
+                <span>
+                  <strong>完成后自检</strong>
+                  <small>输出验证结果和未验证风险</small>
+                </span>
+              </label>
+            </fieldset>
 
-          <fieldset className="permission-options">
-            <legend>执行权限</legend>
-            <label>
-              <input
-                type="checkbox"
-                checked={form.allowNetwork}
-                onChange={(event) =>
-                  update("allowNetwork", event.target.checked)
-                }
-              />
-              <span>
-                <strong>允许联网</strong>
-                <small>搜索资料或访问公开网页</small>
-              </span>
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={form.allowModify}
-                onChange={(event) =>
-                  update("allowModify", event.target.checked)
-                }
-              />
-              <span>
-                <strong>允许修改原文件</strong>
-                <small>仍要求先创建可恢复副本</small>
-              </span>
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={form.requireCheck}
-                onChange={(event) =>
-                  update("requireCheck", event.target.checked)
-                }
-              />
-              <span>
-                <strong>完成后自检</strong>
-                <small>输出验证结果和未验证风险</small>
-              </span>
-            </label>
-          </fieldset>
-
-          <div className="recommendation-box">
-            <div>
-              <span>自动建议</span>
-              <strong>最少使用 {recommendations.length || 1} 个 Skill</strong>
-            </div>
-            <div className="recommended-skills">
-              {recommendations.map((skill) =>
-                skill ? (
-                  <Link key={skill.slug} href={`/skills/${skill.slug}`}>
-                    <span>{skill.category}</span>
-                    <strong>{skill.chineseName}</strong>
-                  </Link>
-                ) : null,
-              )}
+            <div className="recommendation-box">
+              <div>
+                <span>自动建议</span>
+                <strong>最少使用 {recommendations.length || 1} 个 Skill</strong>
+              </div>
+              <div className="recommended-skills">
+                {recommendations.map((skill) =>
+                  skill ? (
+                    <Link key={skill.slug} href={`/skills/${skill.slug}`}>
+                      <span>{skill.category}</span>
+                      <strong>{skill.chineseName}</strong>
+                    </Link>
+                  ) : null,
+                )}
+              </div>
             </div>
           </div>
 
-          <button type="submit" className="button button-wide">
+          <button type="submit" className="button button-wide desktop-task-submit">
             生成完整任务单
           </button>
+
+          <div className="mobile-task-actions">
+            {mobileStep > 1 ? (
+              <button
+                type="button"
+                className="task-back-button"
+                onClick={() =>
+                  setMobileStep((mobileStep - 1) as MobileStep)
+                }
+                aria-label="返回上一步"
+              >
+                <ArrowLeft aria-hidden="true" size={19} />
+              </button>
+            ) : null}
+            {mobileStep < 3 ? (
+              <button
+                type="button"
+                className="button"
+                onClick={() =>
+                  setMobileStep((mobileStep + 1) as MobileStep)
+                }
+              >
+                下一步
+                <ArrowRight aria-hidden="true" size={18} />
+              </button>
+            ) : (
+              <button type="submit" className="button">
+                <Sparkles aria-hidden="true" size={18} />
+                生成任务单
+              </button>
+            )}
+          </div>
         </form>
 
-        <aside className="task-output">
+        <aside
+          ref={outputRef}
+          className={`task-output ${
+            mobileView === "result" ? "mobile-view-active" : ""
+          }`}
+          tabIndex={-1}
+        >
           <div className="task-output-heading">
             <div>
-              <span>02</span>
+              <ClipboardCheck aria-hidden="true" size={20} />
               <h2>复制给 Codex</h2>
             </div>
             {generated ? (
               <button type="button" onClick={copyTask}>
+                <Copy aria-hidden="true" size={16} />
                 {copyState === "copied" ? "已复制" : "复制全文"}
               </button>
             ) : null}
@@ -340,6 +469,14 @@ ${recommendedNames}
 
           {generated ? (
             <>
+              <button
+                type="button"
+                className="mobile-edit-task"
+                onClick={() => setMobileView("form")}
+              >
+                <ArrowLeft aria-hidden="true" size={17} />
+                返回修改
+              </button>
               <pre>{generated}</pre>
               {copyState === "error" ? (
                 <p className="inline-error" role="status">

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { categories, skills } from "../data/skills";
+import { skills } from "../data/skills";
+import { CategoryGrid } from "./CategoryGrid";
 
 export const metadata: Metadata = {
   title: "Skill 工作分类",
@@ -9,12 +11,18 @@ export const metadata: Metadata = {
 };
 
 export default function CategoriesPage() {
+  const availableCategoryCount = new Set(
+    skills.map((skill) => skill.category),
+  ).size;
+
   return (
     <main id="main-content" className="catalog-page">
       <section className="page-hero page-hero-compact">
         <div className="container page-hero-grid">
           <div>
-            <p className="eyebrow">12 个工作方向</p>
+            <p className="eyebrow">
+              {availableCategoryCount} 个已有内容的工作方向
+            </p>
             <h1>按工作目标找 Skill，不按技术名词找</h1>
             <p>
               不知道任务属于哪个分类也没关系。进入全部 Skill 后，直接用中文描述需求。
@@ -29,40 +37,7 @@ export default function CategoriesPage() {
       </section>
 
       <section className="section container">
-        <div className="catalog-grid">
-          {categories.map((category, index) => {
-            const matches = skills.filter(
-              (skill) => skill.category === category.name,
-            );
-            return (
-              <article className="catalog-card" key={category.name}>
-                <div className="catalog-card-top">
-                  <span className="category-symbol" aria-hidden="true">
-                    {category.symbol}
-                  </span>
-                  <small>{String(index + 1).padStart(2, "0")}</small>
-                </div>
-                <h2>{category.name}</h2>
-                <p>{category.short}</p>
-                <div className="catalog-keywords">
-                  {category.aliases.slice(0, 4).map((alias) => (
-                    <span key={alias}>{alias}</span>
-                  ))}
-                </div>
-                <div className="catalog-card-bottom">
-                  <strong>
-                    {matches.length ? `${matches.length} 个已核验` : "等待首批收录"}
-                  </strong>
-                  <Link
-                    href={`/skills?category=${encodeURIComponent(category.name)}`}
-                  >
-                    查看分类 →
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+        <CategoryGrid />
 
         <div className="natural-search-cta">
           <div>
@@ -71,7 +46,7 @@ export default function CategoriesPage() {
           </div>
           <Link href="/skills" className="button">
             用中文搜索
-            <span aria-hidden="true">→</span>
+            <ArrowRight aria-hidden="true" size={18} />
           </Link>
         </div>
       </section>

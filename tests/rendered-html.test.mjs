@@ -49,8 +49,13 @@ test("server-renders the finished homepage with production metadata", async () =
   assert.match(html, /技能开工站/);
   assert.match(html, /30 秒找到能用的 Skill/);
   assert.match(html, /帮我找 Skill/);
-  assert.match(html, /已核验 Skill/);
+  assert.match(html, /来源链接已核验/);
+  assert.match(html, /还没找到合适的 Skill/);
+  assert.match(html, /立即搜索 Skill/);
+  assert.match(html, /第三方中文指南，不代表 OpenAI 官方产品/);
   assert.match(html, /https:\/\/skill-start\.example\/og\.png/);
+  assert.doesNotMatch(html, /AI 接口中转/);
+  assert.doesNotMatch(html, /AI 订阅协助/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|Building your site/);
 });
 
@@ -61,9 +66,9 @@ test("renders the directory, detail, workbench, and guide routes", async () => {
     ["/skills/baoyu-xhs-images", /小红书图卡生成/],
     ["/workbench", /Codex 能执行的任务单/],
     ["/guide", /先弄懂三件事/],
-    ["/categories", /12 个工作方向/],
-    ["/rankings", /热门不等于最好/],
-    ["/updates", /更新讲人话/],
+    ["/categories", /已有内容的工作方向/],
+    ["/rankings", /推荐不等于适合所有人/],
+    ["/updates", /更新记录讲人话/],
     ["/library", /我的 Skill 清单/],
   ];
 
@@ -78,11 +83,31 @@ test("keeps responsive and accessibility rules in the finished stylesheet", asyn
   const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
   assert.match(css, /\.skip-link/);
   assert.match(css, /:focus-visible/);
-  assert.match(css, /@media \(max-width: 760px\)/);
+  assert.match(css, /@media \(max-width: 820px\)/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /\[data-theme="dark"\]/);
   assert.match(css, /\.mobile-bottom-nav/);
+  assert.match(css, /\.mobile-detail-actionbar/);
+  assert.match(css, /\.filter-sheet-backdrop/);
+  assert.match(css, /\.task-stepper/);
   assert.match(css, /\.tool-mosaic/);
+  assert.match(css, /\.footer-mobile-cta/);
+  assert.match(css, /\.footer-mobile-links/);
+  assert.match(css, /\.footer-mobile-services/);
+});
+
+test("keeps desktop and mobile navigation mapped to the same pages", async () => {
+  const header = await readFile(
+    new URL("../app/components/SiteHeader.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(header, /href: "\/skills", label: "Skill"/);
+  assert.match(header, /href: "\/rankings", label: "推荐榜"/);
+  assert.match(header, /href: "\/updates", label: "更新记录"/);
+  assert.match(header, /className={`header-library-link/);
+  assert.match(header, /href="\/library"/);
+  assert.match(header, />我的清单</);
 });
 
 test("ships the branded social image and removes starter files", async () => {
@@ -97,4 +122,22 @@ test("ships the branded social image and removes starter files", async () => {
   assert.match(layout, /lang="zh-CN"/);
   assert.match(packageJson, /"name": "skill-start-station"/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+});
+
+test("keeps the static catalog honest and GitHub-first", async () => {
+  const [skillsSource, detailActions, packageJson] = await Promise.all([
+    readFile(new URL("../app/data/skills.ts", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/skills/[slug]/CopyActions.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ]);
+
+  assert.doesNotMatch(skillsSource, /openai-google-slides/);
+  assert.match(detailActions, /打开 GitHub 源地址/);
+  assert.match(detailActions, /复制参考命令/);
+  assert.doesNotMatch(detailActions, /标记已安装/);
+  assert.match(packageJson, /"check:skills"/);
+  assert.match(packageJson, /"check:links"/);
 });

@@ -1,9 +1,11 @@
 "use client";
 
+import { ArrowRight, Check, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { categories, featuredSkills, skills } from "./data/skills";
+import { siteConfig } from "./data/site";
 
 const popularQueries = [
   "做 PPT",
@@ -17,7 +19,7 @@ const popularQueries = [
 const workTools = [
   {
     index: "01",
-    label: "每日高频",
+    label: "本机工具",
     title: "Codex 任务单生成器",
     copy: "把一句模糊需求整理成带输入、输出、权限和验收标准的完整任务。",
     href: "/workbench",
@@ -27,7 +29,7 @@ const workTools = [
   {
     index: "02",
     label: "安装前判断",
-    title: "GitHub Skill 体检清单",
+    title: "Skill 安全检查教程",
     copy: "先检查脚本、联网、密钥、覆盖文件和维护状态。",
     href: "/guide#safety",
     action: "查看检查方法",
@@ -35,7 +37,7 @@ const workTools = [
   },
   {
     index: "03",
-    label: "少装更好",
+    label: "按需选择",
     title: "Skill 最小组合",
     copy: "按职业和工作目标，只选择真正需要的一组 Skill。",
     href: "/categories",
@@ -46,7 +48,7 @@ const workTools = [
     index: "04",
     label: "本机保存",
     title: "我的 Skill 清单",
-    copy: "收藏、最近查看和准备安装都保存在当前浏览器。",
+    copy: "收藏和最近查看只保存在当前浏览器，不需要注册。",
     href: "/library",
     action: "打开我的清单",
     tone: "slate",
@@ -73,6 +75,11 @@ const rolePacks = [
     symbol: "站",
   },
 ];
+
+const availableCategories = categories.filter((category) =>
+  skills.some((skill) => skill.category === category.name),
+);
+const activeCategoryCount = availableCategories.length;
 
 export function HomeExperience() {
   const router = useRouter();
@@ -116,9 +123,12 @@ export function HomeExperience() {
             <form className="hero-search" onSubmit={submit}>
               <label htmlFor="home-search">今天想让 Codex 帮你做什么？</label>
               <div className="hero-search-row">
-                <span className="search-symbol" aria-hidden="true">
-                  ⌕
-                </span>
+                <Search
+                  className="search-symbol"
+                  aria-hidden="true"
+                  size={21}
+                  strokeWidth={2}
+                />
                 <input
                   id="home-search"
                   value={query}
@@ -127,7 +137,7 @@ export function HomeExperience() {
                 />
                 <button type="submit" className="button">
                   帮我找 Skill
-                  <span aria-hidden="true">→</span>
+                  <ArrowRight aria-hidden="true" size={18} />
                 </button>
               </div>
               <div className="quick-queries" aria-label="常用需求">
@@ -141,30 +151,30 @@ export function HomeExperience() {
 
             <div className="trust-line">
               <span>
-                <b>✓</b> 来源链接已核验
+                <Check aria-hidden="true" size={15} /> 来源链接已核验
               </span>
               <span>
-                <b>✓</b> 权限先讲明白
+                <Check aria-hidden="true" size={15} /> 权限先讲明白
               </span>
               <span>
-                <b>✓</b> 不把 Star 当安全认证
+                <Check aria-hidden="true" size={15} /> 不把 Star 当安全认证
               </span>
             </div>
           </div>
 
-          <aside className="hero-workcard" aria-label="今天的 AI 开工台">
+          <aside className="hero-workcard" aria-label="Skill 使用示例">
             <div className="workcard-window">
               <div className="window-dots" aria-hidden="true">
                 <i />
                 <i />
                 <i />
               </div>
-              <span>今天的 AI 开工台</span>
-              <small>本地保存</small>
+              <span>Skill 使用示例</span>
+              <small>静态演示</small>
             </div>
 
             <div className="workcard-body">
-              <p className="workflow-label">推荐工作流 · 自媒体内容发布</p>
+              <p className="workflow-label">示例工作流 · 自媒体内容发布</p>
               <h2>把一篇长文章变成可直接发布的小红书图文</h2>
               <div className="workflow-steps">
                 <div className="workflow-step active">
@@ -173,7 +183,7 @@ export function HomeExperience() {
                     <strong>文章结构整理</strong>
                     <small>提炼标题、观点与内容层级</small>
                   </p>
-                  <b>已匹配</b>
+                  <b>步骤 1</b>
                 </div>
                 <div className="workflow-connector" />
                 <div className="workflow-step">
@@ -182,7 +192,7 @@ export function HomeExperience() {
                     <strong>图文卡片生成</strong>
                     <small>拆成统一视觉的 3:4 图片</small>
                   </p>
-                  <b>已匹配</b>
+                  <b>步骤 2</b>
                 </div>
                 <div className="workflow-connector" />
                 <div className="workflow-step">
@@ -191,7 +201,7 @@ export function HomeExperience() {
                     <strong>发布文案优化</strong>
                     <small>生成标题、正文与话题方向</small>
                   </p>
-                  <b>已匹配</b>
+                  <b>步骤 3</b>
                 </div>
               </div>
 
@@ -200,18 +210,6 @@ export function HomeExperience() {
                   生成这份任务单
                 </Link>
                 <Link href="/skills?q=小红书">查看匹配 Skill</Link>
-              </div>
-
-              <div className="workcard-stats">
-                <span>
-                  <strong>{skills.length}</strong>已核验条目
-                </span>
-                <span>
-                  <strong>{categories.length}</strong>工作分类
-                </span>
-                <span>
-                  <strong>0</strong>虚构安装量
-                </span>
               </div>
             </div>
           </aside>
@@ -222,15 +220,15 @@ export function HomeExperience() {
         <div className="container proof-grid">
           <p>
             <strong>{skills.length}</strong>
-            <span>已核验 Skill</span>
+            <span>来源链接已核验</span>
           </p>
           <p>
-            <strong>{categories.length}</strong>
-            <span>工作分类</span>
+            <strong>{activeCategoryCount}</strong>
+            <span>已有内容分类</span>
           </p>
           <p>
-            <strong>2026-07-29</strong>
-            <span>最近来源核验</span>
+            <strong>{siteConfig.linkCheckedAt}</strong>
+            <span>最近链接检查</span>
           </p>
           <p>
             <strong>无需注册</strong>
@@ -244,10 +242,10 @@ export function HomeExperience() {
           <div className="section-heading section-heading-row">
             <div>
               <p className="eyebrow">AI WORKSPACE</p>
-              <h2>每天都会用到的 AI 工作入口</h2>
+              <h2>找 Skill 之外的实用工具</h2>
             </div>
             <p>
-              不只是找 Skill，也把安装判断、工作边界和个人清单一起整理好。
+              任务单、安装前检查和本机收藏均在浏览器中完成。
             </p>
           </div>
 
@@ -279,12 +277,12 @@ export function HomeExperience() {
               <h2>不知道 Skill 名字，也能找到入口</h2>
             </div>
             <Link href="/categories" className="section-link">
-              查看全部 {categories.length} 个分类 →
+              查看全部 {activeCategoryCount} 个分类 →
             </Link>
           </div>
 
           <div className="category-board">
-            {categories.slice(0, 8).map((category, index) => {
+            {availableCategories.slice(0, 8).map((category, index) => {
               const count = skills.filter(
                 (skill) => skill.category === category.name,
               ).length;
@@ -301,7 +299,7 @@ export function HomeExperience() {
                     <strong>{category.name}</strong>
                     <small>{category.short}</small>
                   </span>
-                  <b>{count ? `${count} 个` : "待收录"}</b>
+                  <b>{count} 个</b>
                 </Link>
               );
             })}
@@ -390,7 +388,9 @@ export function HomeExperience() {
       <section className="section update-section">
         <div className="container update-card">
           <div>
-            <p className="eyebrow">TODAY · 2026-07-29</p>
+            <p className="eyebrow">
+              RECENT UPDATE · {siteConfig.contentUpdatedAt}
+            </p>
             <h2>首发版本：数据真实比数字好看更重要</h2>
           </div>
           <div className="update-copy">
@@ -399,12 +399,12 @@ export function HomeExperience() {
               GitHub Star 包装成安全认证。
             </p>
             <p>
-              “来源已核验”表示仓库与路径存在，不代表脚本经过完整安全审计。
+              “来源链接已核验”表示仓库与路径存在，不代表脚本经过完整安全审计。
             </p>
           </div>
           <Link href="/updates" className="button button-light">
-            查看更新中心
-            <span aria-hidden="true">→</span>
+            查看更新记录
+            <ArrowRight aria-hidden="true" size={18} />
           </Link>
         </div>
       </section>

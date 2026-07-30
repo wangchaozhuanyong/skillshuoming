@@ -1,18 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { skills } from "../data/skills";
+import { siteConfig } from "../data/site";
 
 export const metadata: Metadata = {
-  title: "Skill 更新中心",
+  title: "Skill 更新记录",
   description:
-    "查看技能开工站的 Skill 收录、来源核验、安装说明和权限提示更新。",
+    "查看技能开工站的 Skill 收录、来源链接、安装说明和权限提示更新。",
 };
 
 const changes = [
   {
     date: "2026-07-29",
+    label: "来源修正",
+    title: "移除已失效的 Google Slides 条目",
+    copy: "原公开地址已返回 404。没有可核验的新来源前，不继续展示或推荐该条目。",
+    level: "safety",
+  },
+  {
+    date: "2026-07-29",
     label: "首发上线",
-    title: `首批 ${skills.length} 个 Skill 完成公开来源核验`,
+    title: `首批 ${skills.length} 个 Skill 完成公开来源链接核验`,
     copy: "覆盖办公、内容、图片、网站、数据、自动化、开发和 Skill 工具。每个条目均展示用途、来源、权限与使用边界。",
     level: "new",
   },
@@ -39,15 +47,15 @@ export default function UpdatesPage() {
         <div className="container page-hero-grid">
           <div>
             <p className="eyebrow">UPDATE CENTER</p>
-            <h1>更新讲人话：是否重装，权限是否变化</h1>
+            <h1>更新记录讲人话：来源、安装和权限哪里变了</h1>
             <p>
               这里不堆 Git 提交记录，只展示会影响普通用户选择和使用的变化。
             </p>
           </div>
           <aside className="page-hero-note">
-            <span>当前版本</span>
-            <strong>首发 · 2026-07-29</strong>
-            <p>{skills.length} 个来源已核验条目，无虚构安装数据。</p>
+            <span>最近内容更新</span>
+            <strong>{siteConfig.contentUpdatedAt}</strong>
+            <p>{skills.length} 个来源链接已核验条目，无虚构安装数据。</p>
           </aside>
         </div>
       </section>

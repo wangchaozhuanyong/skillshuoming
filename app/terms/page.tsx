@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { siteConfig } from "../data/site";
 
 export const metadata: Metadata = {
   title: "使用条款",
@@ -11,7 +12,9 @@ export default function TermsPage() {
       <article className="container narrow-container">
         <p className="eyebrow">使用条款</p>
         <h1>使用本站前请了解这些边界</h1>
-        <p className="simple-lead">更新日期：2026-07-29</p>
+        <p className="simple-lead">
+          更新日期：{siteConfig.legalUpdatedAt}
+        </p>
 
         <h2>非官方产品</h2>
         <p>
@@ -21,7 +24,7 @@ export default function TermsPage() {
 
         <h2>不是安全认证</h2>
         <p>
-          “来源已核验”仅表示公开仓库和页面路径在核验时存在，不代表第三方
+          “来源链接已核验”仅表示公开仓库和页面路径在核验时存在，不代表第三方
           Skill 通过完整代码审计、隔离运行或安全认证。
         </p>
 

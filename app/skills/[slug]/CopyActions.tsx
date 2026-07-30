@@ -1,8 +1,10 @@
 "use client";
 
+import { Bookmark, Copy, ExternalLink, SquareTerminal } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type CopyActionsProps = {
+  githubUrl: string;
   installCommand?: string;
   prompt: string;
   slug: string;
@@ -11,6 +13,7 @@ type CopyActionsProps = {
 type CopyState = "idle" | "install" | "prompt" | "error";
 
 export function CopyActions({
+  githubUrl,
   installCommand,
   prompt,
   slug,
@@ -64,28 +67,44 @@ export function CopyActions({
 
   return (
     <div className="copy-actions">
-      {installCommand ? (
-        <button
-          type="button"
-          className="button"
-          onClick={() => copy(installCommand, "install")}
-        >
-          {state === "install" ? "安装命令已复制" : "复制安装命令"}
-        </button>
-      ) : null}
+      <a
+        className="button"
+        href={githubUrl}
+        target="_blank"
+        rel="noreferrer"
+      >
+        <ExternalLink aria-hidden="true" size={17} />
+        打开 GitHub 源地址
+      </a>
       <button
         type="button"
         className="button button-outline"
         onClick={() => copy(prompt, "prompt")}
       >
+        <Copy aria-hidden="true" size={17} />
         {state === "prompt" ? "使用话术已复制" : "复制使用话术"}
       </button>
+      {installCommand ? (
+        <button
+          type="button"
+          className="button button-quiet"
+          onClick={() => copy(installCommand, "install")}
+        >
+          <SquareTerminal aria-hidden="true" size={17} />
+          {state === "install" ? "参考命令已复制" : "复制参考命令"}
+        </button>
+      ) : null}
       <button
         type="button"
         className={`button button-quiet ${favorite ? "active" : ""}`}
         onClick={toggleFavorite}
         aria-pressed={favorite}
       >
+        <Bookmark
+          aria-hidden="true"
+          size={17}
+          fill={favorite ? "currentColor" : "none"}
+        />
         {favorite ? "已收藏" : "收藏到本机"}
       </button>
       {state === "error" ? (
@@ -93,6 +112,20 @@ export function CopyActions({
           浏览器未允许复制，请手动选择文字。
         </p>
       ) : null}
+
+      <div className="mobile-detail-actionbar" aria-label="Skill 快捷操作">
+        <button
+          type="button"
+          onClick={() => copy(prompt, "prompt")}
+        >
+          <Copy aria-hidden="true" size={18} />
+          {state === "prompt" ? "话术已复制" : "复制使用话术"}
+        </button>
+        <a href={githubUrl} target="_blank" rel="noreferrer">
+          <ExternalLink aria-hidden="true" size={18} />
+          打开 GitHub
+        </a>
+      </div>
     </div>
   );
 }

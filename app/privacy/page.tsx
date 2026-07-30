@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { siteConfig } from "../data/site";
 
 export const metadata: Metadata = {
   title: "隐私说明",
@@ -11,7 +12,9 @@ export default function PrivacyPage() {
       <article className="container narrow-container">
         <p className="eyebrow">隐私说明</p>
         <h1>当前版本如何处理你的数据</h1>
-        <p className="simple-lead">更新日期：2026-07-29</p>
+        <p className="simple-lead">
+          更新日期：{siteConfig.legalUpdatedAt}
+        </p>
 
         <h2>搜索与任务内容</h2>
         <p>

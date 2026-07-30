@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { siteConfig } from "../data/site";
 
 export const metadata: Metadata = {
   title: "Codex Skill 小白指南",
@@ -18,7 +19,10 @@ export default function GuidePage() {
             Skill 不是“更长的 Prompt”，也不是装得越多越好。它是一套可重复使用的工作说明，还可能附带脚本、模板和工具依赖。
           </p>
           <div className="guide-source">
-            <span>内容核验：2026-07-29</span>
+            <span>
+              内容更新：{siteConfig.contentUpdatedAt} · 来源链接检查：
+              {siteConfig.linkCheckedAt}
+            </span>
             <a
               href="https://developers.openai.com/codex/skills"
               target="_blank"
@@ -109,6 +113,10 @@ export default function GuidePage() {
               变化。如果新安装的内容没有出现，再重新打开 Codex。不要把几十个 Skill
               一次性全装上：初始 Skill 列表有上下文预算，过多会让说明被缩短或省略。
             </p>
+            <p className="guide-caution">
+              本站不会替你自动安装 Skill。请先打开 GitHub
+              查看源码和作者说明，再决定是否下载或复制参考命令。
+            </p>
           </section>
 
           <section id="safety">
@@ -159,7 +167,7 @@ export default function GuidePage() {
               </li>
             </ol>
             <div className="warning-callout">
-              <strong>“来源已核验”不等于“绝对安全”</strong>
+              <strong>“来源链接已核验”不等于“绝对安全”</strong>
               <p>
                 GitHub Star 只能反映关注度信号。任何包含脚本、联网或账号权限的
                 Skill，都需要按你的数据和使用场景重新判断。

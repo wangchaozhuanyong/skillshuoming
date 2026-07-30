@@ -1,7 +1,15 @@
 "use client";
 
+import {
+  ArrowUpDown,
+  ChevronRight,
+  Heart,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   buildSearchText,
   categories,
@@ -25,6 +33,10 @@ const searchStopWords = new Set([
   "我的",
   "一下",
 ]);
+
+const availableCategories = categories.filter((category) =>
+  skills.some((skill) => skill.category === category.name),
+);
 
 function matchesSearch(skill: SkillEntry, query: string) {
   const normalized = query.trim().toLowerCase();
@@ -95,6 +107,11 @@ export function SkillsExplorer({
   const [sortMode, setSortMode] = useState<SortMode>("推荐优先");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [favoritesReady, setFavoritesReady] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [mobileLayout, setMobileLayout] = useState(false);
+  const filterTriggerRef = useRef<HTMLButtonElement>(null);
+  const closeFiltersRef = useRef<HTMLButtonElement>(null);
+  const filtersPanelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -103,6 +120,53 @@ export function SkillsExplorer({
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 820px)");
+    const sync = () => setMobileLayout(media.matches);
+    const timer = window.setTimeout(sync, 0);
+    media.addEventListener("change", sync);
+    return () => {
+      window.clearTimeout(timer);
+      media.removeEventListener("change", sync);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const trigger = filterTriggerRef.current;
+    document.body.style.overflow = "hidden";
+    closeFiltersRef.current?.focus();
+
+    function handleFilterKeys(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setFiltersOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !filtersPanelRef.current) return;
+      const focusable = filtersPanelRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleFilterKeys);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleFilterKeys);
+      trigger?.focus();
+    };
+  }, [filtersOpen]);
 
   const results = useMemo(() => {
     const filtered = skills.filter((skill) => {
@@ -135,6 +199,11 @@ export function SkillsExplorer({
     setEasyOnly(false);
   }
 
+  const activeFilterCount =
+    Number(Boolean(category)) +
+    Number(source !== "全部来源") +
+    Number(easyOnly);
+
   return (
     <main id="main-content" className="skills-page">
       <section className="directory-hero">
@@ -152,24 +221,48 @@ export function SkillsExplorer({
               首发条目
             </span>
             <span>
-              <strong>{categories.length}</strong>
-              工作分类
-            </span>
-            <span>
-              <strong>0</strong>
-              虚构热度
+              <strong>{availableCategories.length}</strong>
+              已有内容分类
             </span>
           </div>
         </div>
       </section>
 
       <section className="container explorer-shell">
-        <aside className="filters-panel" aria-label="Skill 筛选">
+        <button
+          type="button"
+          className={`filter-sheet-backdrop ${filtersOpen ? "open" : ""}`}
+          aria-label="关闭 Skill 筛选"
+          tabIndex={filtersOpen ? 0 : -1}
+          onClick={() => setFiltersOpen(false)}
+        />
+
+        <aside
+          ref={filtersPanelRef}
+          className={`filters-panel ${filtersOpen ? "open" : ""}`}
+          aria-label="Skill 筛选"
+          aria-hidden={mobileLayout && !filtersOpen}
+          inert={mobileLayout && !filtersOpen ? true : undefined}
+        >
           <div className="filter-heading">
-            <strong>筛选</strong>
-            <button type="button" onClick={resetFilters}>
-              清空
-            </button>
+            <div>
+              <span>筛选 Skill</span>
+              <strong>{results.length} 个结果</strong>
+            </div>
+            <div>
+              <button type="button" onClick={resetFilters}>
+                清空
+              </button>
+              <button
+                ref={closeFiltersRef}
+                type="button"
+                className="filter-close-button"
+                aria-label="关闭筛选"
+                onClick={() => setFiltersOpen(false)}
+              >
+                <X aria-hidden="true" size={20} />
+              </button>
+            </div>
           </div>
 
           <fieldset>
@@ -181,7 +274,7 @@ export function SkillsExplorer({
             >
               全部分类 <span>{skills.length}</span>
             </button>
-            {categories.map((item) => {
+            {availableCategories.map((item) => {
               const count = skills.filter(
                 (skill) => skill.category === item.name,
               ).length;
@@ -225,8 +318,18 @@ export function SkillsExplorer({
           </label>
 
           <div className="filter-note">
-            <strong>这里的“来源已核验”是什么意思？</strong>
+            <strong>这里的“来源链接已核验”是什么意思？</strong>
             <p>表示公开仓库和路径存在，不代表脚本通过完整安全审计。</p>
+          </div>
+
+          <div className="mobile-filter-footer">
+            <button
+              type="button"
+              className="button"
+              onClick={() => setFiltersOpen(false)}
+            >
+              查看 {results.length} 个结果
+            </button>
           </div>
         </aside>
 
@@ -234,13 +337,16 @@ export function SkillsExplorer({
           <div className="results-toolbar">
             <label className="directory-search">
               <span>搜索</span>
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="例如：做 PPT、分析 Excel、检查网站"
-              />
+              <div>
+                <Search aria-hidden="true" size={19} />
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="例如：做 PPT、分析 Excel、检查网站"
+                />
+              </div>
             </label>
-            <label className="sort-select">
+            <label className="sort-select desktop-sort-select">
               <span>排序</span>
               <select
                 value={sortMode}
@@ -251,7 +357,58 @@ export function SkillsExplorer({
                 <option>来源优先</option>
               </select>
             </label>
+
+            <div className="mobile-explorer-controls">
+              <button
+                ref={filterTriggerRef}
+                type="button"
+                onClick={() => setFiltersOpen(true)}
+                aria-haspopup="dialog"
+                aria-expanded={filtersOpen}
+              >
+                <SlidersHorizontal aria-hidden="true" size={18} />
+                筛选
+                {activeFilterCount ? <b>{activeFilterCount}</b> : null}
+              </button>
+              <label>
+                <ArrowUpDown aria-hidden="true" size={18} />
+                <span className="sr-only">排序</span>
+                <select
+                  value={sortMode}
+                  onChange={(event) =>
+                    setSortMode(event.target.value as SortMode)
+                  }
+                >
+                  <option>推荐优先</option>
+                  <option>小白优先</option>
+                  <option>来源优先</option>
+                </select>
+              </label>
+            </div>
           </div>
+
+          {activeFilterCount ? (
+            <div className="active-filter-chips" aria-label="已选筛选条件">
+              {category ? (
+                <button type="button" onClick={() => setCategory("")}>
+                  {category}
+                  <X aria-hidden="true" size={13} />
+                </button>
+              ) : null}
+              {source !== "全部来源" ? (
+                <button type="button" onClick={() => setSource("全部来源")}>
+                  {source}
+                  <X aria-hidden="true" size={13} />
+                </button>
+              ) : null}
+              {easyOnly ? (
+                <button type="button" onClick={() => setEasyOnly(false)}>
+                  小白可用
+                  <X aria-hidden="true" size={13} />
+                </button>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="results-summary">
             <p>
@@ -297,7 +454,12 @@ export function SkillsExplorer({
                         aria-pressed={favorite}
                         onClick={() => toggleFavorite(skill.slug)}
                       >
-                        {favorite ? "已收藏" : "收藏"}
+                        <Heart
+                          aria-hidden="true"
+                          size={18}
+                          fill={favorite ? "currentColor" : "none"}
+                        />
+                        <span>{favorite ? "已收藏" : "收藏"}</span>
                       </button>
                     </div>
 
@@ -326,6 +488,7 @@ export function SkillsExplorer({
                         href={`/skills/${skill.slug}`}
                       >
                         查看怎么用
+                        <ChevronRight aria-hidden="true" size={17} />
                       </Link>
                     </div>
                   </article>
