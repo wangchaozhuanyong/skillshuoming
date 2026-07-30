@@ -12,36 +12,45 @@ export const metadata: Metadata = {
 
 const changes = [
   {
-    date: "2026-07-29",
+    date: siteConfig.contentUpdatedAt,
     label: "来源修正",
     title: "移除已失效的 Google Slides 条目",
     copy: "原公开地址已返回 404。没有可核验的新来源前，不继续展示或推荐该条目。",
     level: "safety",
   },
   {
-    date: "2026-07-29",
+    date: siteConfig.contentUpdatedAt,
     label: "首发上线",
     title: `首批 ${skills.length} 个 Skill 完成公开来源链接核验`,
     copy: "覆盖办公、内容、图片、网站、数据、自动化、开发和 Skill 工具。每个条目均展示用途、来源、权限与使用边界。",
     level: "new",
   },
   {
-    date: "2026-07-29",
+    date: siteConfig.contentUpdatedAt,
     label: "安装说明",
     title: "安装路径更新为当前 Codex 官方规则",
     copy: "项目级使用 .agents/skills，个人级使用 $HOME/.agents/skills；旧的 .codex/skills 路径不再作为默认推荐。",
     level: "verified",
   },
   {
-    date: "2026-07-29",
+    date: siteConfig.contentUpdatedAt,
     label: "可信边界",
     title: "移除虚构 Star、安装量和质量分",
     copy: "来源存在不代表安全认证。所有涉及脚本、联网、密钥和文件覆盖的项目都会单独提示。",
     level: "safety",
   },
+  {
+    date: siteConfig.contentUpdatedAt,
+    label: "交互优化",
+    title: "移动端页脚去广告化、导航统一化",
+    copy: "移动端页脚改为信息导航型，顶部/侧边导航与桌面主导航口径统一，减少无关视觉噪点。",
+    level: "verified",
+  },
 ];
 
 export default function UpdatesPage() {
+  const now = siteConfig.contentUpdatedAt;
+
   return (
     <main id="main-content" className="updates-page">
       <PageHeader
@@ -61,7 +70,7 @@ export default function UpdatesPage() {
           {changes.map((change) => (
             <article key={change.title} className={`update-item ${change.level}`}>
               <div className="update-date">
-                <span>{change.date}</span>
+                <span>{change.date ?? now}</span>
                 <b>{change.label}</b>
               </div>
               <div>

@@ -65,7 +65,7 @@ test("server-renders the finished homepage with production metadata", async () =
   assert.match(html, /30 秒找到能用的 Skill/);
   assert.match(html, /帮我找 Skill/);
   assert.match(html, /来源链接已核验/);
-  assert.match(html, /第三方中文指南，不代表 OpenAI 官方产品/);
+  assert.match(html, /非 OpenAI 官方产品/);
   assert.match(html, /https:\/\/skill-start\.example\/og\.png/);
   assert.doesNotMatch(html, /AI 接口中转/);
   assert.doesNotMatch(html, /AI 订阅协助/);
@@ -104,8 +104,9 @@ test("keeps responsive and accessibility rules in the finished stylesheet", asyn
   assert.match(css, /\.filter-sheet-backdrop/);
   assert.match(css, /\.task-stepper/);
   assert.match(css, /\.tool-mosaic/);
-  assert.match(css, /\.footer-mobile-summary/);
-  assert.match(css, /\.footer-mobile-index/);
+  assert.match(css, /\.footer-mobile-header/);
+  assert.match(css, /\.footer-mobile-grid/);
+  assert.match(css, /\.footer-mobile-policy/);
   assert.match(css, /\.footer-mobile-legal/);
   assert.match(css, /\.compact-page-header/);
 });
@@ -124,7 +125,9 @@ test("keeps desktop and mobile navigation mapped to the same pages", async () =>
   assert.match(navigation, /"\/categories"/);
   assert.match(navigation, /"\/guide"/);
   assert.match(header, /matchesNavigationArea/);
-  assert.match(header, /mobileDrawerNavigation/);
+  assert.match(header, /mobileDrawerGroups/);
+  assert.match(header, /title: "发现"/);
+  assert.match(header, /title: "工作"/);
   assert.match(header, /className={`header-library-link/);
   assert.match(header, /libraryNavigation\.href/);
   assert.match(header, /libraryNavigation\.label/);

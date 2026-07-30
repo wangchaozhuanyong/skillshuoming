@@ -23,7 +23,6 @@ import {
   matchesNavigationArea,
   matchesPath,
   mobileBottomNavigation,
-  mobileDrawerNavigation,
   type NavigationIcon,
   primaryNavigation,
 } from "../data/navigation";
@@ -91,6 +90,25 @@ export function SiteHeader() {
     document.documentElement.dataset.theme = next;
     window.localStorage.setItem("skill-start-theme", next);
   }
+
+  const discoverLinks = [
+    { href: "/", label: "首页", icon: "home" as const },
+    { href: "/skills", label: "全部 Skill", icon: "skills" as const },
+    { href: "/categories", label: "分类", icon: "categories" as const },
+    { href: "/rankings", label: "推荐榜", icon: "rankings" as const },
+    { href: "/updates", label: "更新记录", icon: "updates" as const },
+    { href: "/guide", label: "小白教程", icon: "guide" as const },
+  ];
+
+  const workLinks = [
+    { href: "/workbench", label: "AI 工作台", icon: "workbench" as const },
+    libraryNavigation,
+  ];
+
+  const mobileDrawerGroups = [
+    { title: "发现", links: discoverLinks },
+    { title: "工作", links: workLinks },
+  ];
 
   return (
     <>
@@ -227,28 +245,36 @@ export function SiteHeader() {
           </button>
         </div>
 
-        <p className="mobile-drawer-section-label">全部栏目</p>
-        <nav aria-label="移动端次级导航">
-          {mobileDrawerNavigation.map((link) => {
-            const Icon = navigationIcons[link.icon];
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={matchesPath(pathname, link.href) ? "active" : ""}
-                onClick={() => setMenuOpen(false)}
-              >
-                <Icon aria-hidden="true" size={20} strokeWidth={1.9} />
-                <span>{link.label}</span>
-                <ChevronRight
-                  className="mobile-menu-arrow"
-                  aria-hidden="true"
-                  size={15}
-                />
-              </Link>
-            );
-          })}
-        </nav>
+        {mobileDrawerGroups.map((group) => (
+          <section
+            key={group.title}
+            className="mobile-drawer-section"
+            aria-label={`移动端${group.title}导航`}
+          >
+            <p className="mobile-drawer-section-label">{group.title}</p>
+            <nav>
+              {group.links.map((link) => {
+                const Icon = navigationIcons[link.icon];
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={matchesPath(pathname, link.href) ? "active" : ""}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <Icon aria-hidden="true" size={20} strokeWidth={1.9} />
+                    <span>{link.label}</span>
+                    <ChevronRight
+                      className="mobile-menu-arrow"
+                      aria-hidden="true"
+                      size={15}
+                    />
+                  </Link>
+                );
+              })}
+            </nav>
+          </section>
+        ))}
 
         <div className="mobile-service-links">
           <p>{siteConfig.services.enabled ? "第三方服务" : "显示设置"}</p>

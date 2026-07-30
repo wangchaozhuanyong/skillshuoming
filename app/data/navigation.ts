@@ -46,11 +46,6 @@ export const mobileBottomNavigation: Array<
   { href: "/library", label: "我的", icon: "library", area: "library" },
 ];
 
-export const mobileDrawerNavigation = [
-  ...primaryNavigation,
-  libraryNavigation,
-];
-
 export const footerUtilityNavigation = primaryNavigation.filter((item) =>
   ["/guide", "/updates"].includes(item.href),
 );
@@ -78,4 +73,3 @@ export function matchesNavigationArea(
 
   return discoverPrefixes.some((prefix) => matchesPath(pathname, prefix));
 }
-
