@@ -1387,11 +1387,9 @@ textarea::placeholder {
 .compact-page-header {
   position: relative;
   overflow: hidden;
-  padding: 58px 0 40px;
+  padding: 46px 0 28px;
   border-bottom: 1px solid var(--line);
-  background:
-    radial-gradient(circle at 82% 8%, rgba(124, 101, 211, 0.15), transparent 24rem),
-    linear-gradient(180deg, var(--surface), var(--bg));
+  background: var(--surface);
 }
 
 .compact-page-header-layout {
@@ -1409,14 +1407,17 @@ textarea::placeholder {
 
 .compact-page-header-copy h1 {
   margin-bottom: 0;
-  font-size: clamp(1.95rem, 4.6vw, 2.85rem);
+  margin-right: 1rem;
+  font-size: clamp(1.92rem, 4.6vw, 2.65rem);
+  max-width: 18ch;
 }
 
 .compact-page-header-copy p {
   margin: 0;
   color: var(--ink-soft);
-  max-width: 690px;
-  font-size: 0.96rem;
+  font-size: 0.95rem;
+  max-width: 68ch;
+  line-height: 1.75;
 }
 
 .compact-page-header-meta {
@@ -1438,8 +1439,9 @@ textarea::placeholder {
   color: var(--primary);
   background: var(--surface-2);
   border: 1px solid var(--line);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 760;
+  letter-spacing: 0.01em;
 }
 
 .compact-page-header-meta a {
@@ -1452,7 +1454,7 @@ textarea::placeholder {
 
 @media (max-width: 980px) {
   .compact-page-header {
-    padding: 42px 0 30px;
+    padding: 36px 0 22px;
   }
 
   .compact-page-header-layout {
@@ -1466,12 +1468,13 @@ textarea::placeholder {
   }
 
   .compact-page-header-copy h1 {
-    font-size: clamp(1.78rem, 6.8vw, 2.25rem);
+    margin-right: 0;
+    font-size: clamp(1.72rem, 6.4vw, 2.1rem);
   }
 
   .compact-page-header-copy p {
     max-width: 100%;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
   }
 
   .compact-page-header-meta {
@@ -5732,8 +5735,8 @@ textarea::placeholder {
   .footer-mobile {
     display: block;
     width: 100%;
-    max-width: 430px;
-    padding: 18px 0 14px;
+    max-width: 100%;
+    padding: 14px 0 12px;
     color: #d5ddff;
     line-height: 1.5;
   }
@@ -5741,7 +5744,7 @@ textarea::placeholder {
   .footer-mobile-header {
     display: grid;
     gap: 10px;
-    padding: 6px 0 14px;
+    padding: 4px 0 12px;
     border-bottom: 1px solid rgba(143, 158, 203, 0.18);
   }
 
@@ -5784,32 +5787,61 @@ textarea::placeholder {
     font-size: 0.74rem;
   }
 
+  .footer-mobile-section {
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px solid rgba(143, 158, 203, 0.16);
+    border-radius: 16px;
+    background: rgba(12, 20, 41, 0.52);
+  }
+
+  .footer-mobile-section:first-child {
+    margin-top: 12px;
+  }
+
+  .footer-mobile-section-title {
+    margin: 0 0 8px;
+    color: #9fb0e1;
+    font-size: 0.66rem;
+    font-weight: 820;
+    letter-spacing: 0.01em;
+  }
+
   .footer-mobile-grid {
     display: grid;
-    margin-top: 14px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    border-bottom: 1px solid rgba(143, 158, 203, 0.18);
+    overflow: hidden;
+    margin: 0;
+    border: 1px solid rgba(143, 158, 203, 0.14);
+    border-radius: 12px;
+    background: rgba(8, 14, 30, 0.28);
   }
 
   .footer-mobile-grid a {
     display: grid;
     place-items: center;
-    min-height: 44px;
-    padding: 10px;
+    min-height: 42px;
+    padding: 10px 8px;
     color: #e3e8ff;
     border-right: 1px solid rgba(143, 158, 203, 0.18);
     border-top: 1px solid rgba(143, 158, 203, 0.18);
-    font-size: 0.77rem;
+    font-size: 0.74rem;
     font-weight: 760;
     text-align: center;
   }
 
-  .footer-mobile-grid a:nth-child(odd) {
+  .footer-mobile-grid a:nth-child(even) {
     border-right: 0;
   }
 
-  .footer-mobile-grid a:last-child {
-    border-right: 0;
+  .footer-mobile-grid a:nth-child(1),
+  .footer-mobile-grid a:nth-child(2) {
+    border-top: 0;
+  }
+
+  .footer-mobile-grid a:last-child:nth-child(even),
+  .footer-mobile-grid a:last-child:nth-child(odd) {
+    border-bottom: 0;
   }
 
   .footer-mobile-grid a:hover {
@@ -5817,30 +5849,44 @@ textarea::placeholder {
     background: rgba(123, 137, 226, 0.08);
   }
 
+  .footer-mobile-policy-wrap {
+    padding-bottom: 11px;
+  }
+
   .footer-mobile-policy {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 10px;
-    margin-top: 12px;
-    padding: 10px 0;
+    margin-top: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 7px;
   }
 
   .footer-mobile-policy a {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    min-height: 32px;
-    padding: 7px 10px;
+    justify-content: center;
+    min-height: 34px;
+    padding: 7px 8px;
     border: 1px solid rgba(143, 158, 203, 0.26);
     border-radius: 999px;
     color: #ccd6f2;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
+    text-align: center;
   }
 
   .footer-mobile-policy a:hover {
     color: #fff;
     border-color: rgba(173, 188, 255, 0.5);
     background: rgba(123, 137, 226, 0.08);
+  }
+
+  .footer-mobile-policy a svg {
+    transition: transform 160ms ease;
+    transform: translateY(0.5px);
+  }
+
+  .footer-mobile-policy a:hover svg {
+    transform: translate(1px, -1px);
   }
 
   .footer-mobile-policy-note {
@@ -5856,33 +5902,10 @@ textarea::placeholder {
 
   .footer-mobile-legal {
     margin-top: 12px;
-    padding-top: 10px;
+    padding-top: 9px;
     color: #7884a5;
     font-size: 0.64rem;
     border-top: 1px solid rgba(143, 158, 203, 0.18);
-  }
-
-  .footer-mobile-extra-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px 10px;
-    margin-top: 10px;
-  }
-
-  .footer-mobile-extra-links a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 30px;
-    padding: 6px 9px;
-    border-radius: 8px;
-    background: #101a34;
-    color: #acb7de;
-    font-size: 0.68rem;
-  }
-
-  .footer-mobile-extra-links a:hover {
-    color: #fff;
-    background: #1c2748;
   }
 
   .footer-mobile a {
