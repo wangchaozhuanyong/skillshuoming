@@ -5,6 +5,7 @@ import {
   Bookmark,
   BookOpenText,
   Boxes,
+  ChevronRight,
   Compass,
   ExternalLink,
   Home,
@@ -17,36 +18,27 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import {
+  libraryNavigation,
+  matchesNavigationArea,
+  matchesPath,
+  mobileBottomNavigation,
+  mobileDrawerNavigation,
+  type NavigationIcon,
+  primaryNavigation,
+} from "../data/navigation";
 import { siteConfig } from "../data/site";
 
-const links = [
-  { href: "/", label: "首页" },
-  { href: "/skills", label: "全部 Skill" },
-  { href: "/categories", label: "分类" },
-  { href: "/rankings", label: "推荐榜" },
-  { href: "/updates", label: "更新记录" },
-  { href: "/workbench", label: "AI 工作台" },
-  { href: "/guide", label: "小白教程" },
-];
-
-const mobileLinks = [
-  { href: "/", label: "首页", icon: Home },
-  { href: "/skills", label: "Skill", icon: Compass },
-  { href: "/workbench", label: "工作台", icon: Sparkles },
-  { href: "/library", label: "我的", icon: Bookmark },
-];
-
-const mobileMenuLinks = [
-  { href: "/categories", label: "工作分类", icon: Boxes },
-  { href: "/rankings", label: "推荐榜", icon: Trophy },
-  { href: "/updates", label: "更新记录", icon: Bell },
-  { href: "/guide", label: "小白教程", icon: BookOpenText },
-];
-
-function matchesPath(pathname: string, href: string) {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
+const navigationIcons: Record<NavigationIcon, typeof Home> = {
+  home: Home,
+  skills: Compass,
+  categories: Boxes,
+  rankings: Trophy,
+  updates: Bell,
+  workbench: Sparkles,
+  guide: BookOpenText,
+  library: Bookmark,
+};
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -125,7 +117,7 @@ export function SiteHeader() {
           </Link>
 
           <nav className="desktop-nav" aria-label="主导航">
-            {links.map((link) => (
+            {primaryNavigation.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -142,15 +134,17 @@ export function SiteHeader() {
           <div className="header-actions">
             <Link
               className={`header-library-link ${
-                matchesPath(pathname, "/library") ? "active" : ""
+                matchesPath(pathname, libraryNavigation.href) ? "active" : ""
               }`}
-              href="/library"
+              href={libraryNavigation.href}
               aria-current={
-                matchesPath(pathname, "/library") ? "page" : undefined
+                matchesPath(pathname, libraryNavigation.href)
+                  ? "page"
+                  : undefined
               }
             >
               <Bookmark aria-hidden="true" size={17} strokeWidth={2} />
-              <span>我的清单</span>
+              <span>{libraryNavigation.label}</span>
             </Link>
             {siteConfig.services.enabled ? (
               <>
@@ -233,9 +227,10 @@ export function SiteHeader() {
           </button>
         </div>
 
+        <p className="mobile-drawer-section-label">全部栏目</p>
         <nav aria-label="移动端次级导航">
-          {mobileMenuLinks.map((link) => {
-            const Icon = link.icon;
+          {mobileDrawerNavigation.map((link) => {
+            const Icon = navigationIcons[link.icon];
             return (
               <Link
                 key={link.href}
@@ -245,7 +240,7 @@ export function SiteHeader() {
               >
                 <Icon aria-hidden="true" size={20} strokeWidth={1.9} />
                 <span>{link.label}</span>
-                <ExternalLink
+                <ChevronRight
                   className="mobile-menu-arrow"
                   aria-hidden="true"
                   size={15}
@@ -291,14 +286,15 @@ export function SiteHeader() {
       </div>
 
       <nav className="mobile-bottom-nav" aria-label="移动端快捷导航">
-        {mobileLinks.map((link) => {
-          const Icon = link.icon;
+        {mobileBottomNavigation.map((link) => {
+          const Icon = navigationIcons[link.icon];
+          const active = matchesNavigationArea(pathname, link.area);
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={matchesPath(pathname, link.href) ? "active" : ""}
-              aria-current={matchesPath(pathname, link.href) ? "page" : undefined}
+              className={active ? "active" : ""}
+              aria-current={active ? "location" : undefined}
             >
               <Icon aria-hidden="true" size={20} strokeWidth={2} />
               <span>{link.label}</span>

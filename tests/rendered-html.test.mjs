@@ -97,17 +97,23 @@ test("keeps responsive and accessibility rules in the finished stylesheet", asyn
 });
 
 test("keeps desktop and mobile navigation mapped to the same pages", async () => {
-  const header = await readFile(
-    new URL("../app/components/SiteHeader.tsx", import.meta.url),
-    "utf8",
-  );
+  const [header, navigation] = await Promise.all([
+    readFile(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/data/navigation.ts", import.meta.url), "utf8"),
+  ]);
 
-  assert.match(header, /href: "\/skills", label: "Skill"/);
-  assert.match(header, /href: "\/rankings", label: "推荐榜"/);
-  assert.match(header, /href: "\/updates", label: "更新记录"/);
+  assert.match(navigation, /href: "\/skills", label: "全部 Skill"/);
+  assert.match(navigation, /href: "\/rankings", label: "推荐榜"/);
+  assert.match(navigation, /href: "\/updates", label: "更新记录"/);
+  assert.match(navigation, /href: "\/skills", label: "发现"/);
+  assert.match(navigation, /area: "discover"/);
+  assert.match(navigation, /"\/categories"/);
+  assert.match(navigation, /"\/guide"/);
+  assert.match(header, /matchesNavigationArea/);
+  assert.match(header, /mobileDrawerNavigation/);
   assert.match(header, /className={`header-library-link/);
-  assert.match(header, /href="\/library"/);
-  assert.match(header, />我的清单</);
+  assert.match(header, /libraryNavigation\.href/);
+  assert.match(header, /libraryNavigation\.label/);
 });
 
 test("ships the branded social image and removes starter files", async () => {

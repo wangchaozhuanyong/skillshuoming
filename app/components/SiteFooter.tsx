@@ -1,14 +1,10 @@
 import {
-  Bookmark,
   ChevronRight,
   Clock3,
   CreditCard,
   ExternalLink,
   FileText,
-  Flame,
-  Folder,
   GraduationCap,
-  Grid2X2,
   Search,
   Share2,
   ShieldCheck,
@@ -16,23 +12,37 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import {
+  footerUtilityNavigation,
+  libraryNavigation,
+  primaryNavigation,
+} from "../data/navigation";
 import { siteConfig } from "../data/site";
-
-const mobilePrimaryLinks = [
-  { href: "/skills", label: "全部 Skill", icon: Grid2X2 },
-  { href: "/guide", label: "小白教程", icon: GraduationCap },
-  { href: "/categories", label: "工作分类", icon: Folder },
-  { href: "/updates", label: "更新记录", icon: Clock3 },
-  { href: "/rankings", label: "推荐榜", icon: Flame },
-  { href: "/library", label: "我的清单", icon: Bookmark },
-];
 
 const mobilePolicyLinks = [
   { href: "/privacy", label: "隐私政策", icon: ShieldCheck },
   { href: "/terms", label: "使用条款", icon: FileText },
 ];
 
+function navigationItem(href: string) {
+  const item = primaryNavigation.find((candidate) => candidate.href === href);
+  if (!item) throw new Error(`Missing navigation item for ${href}`);
+  return item;
+}
+
 export function SiteFooter() {
+  const discoveryLinks = [
+    navigationItem("/skills"),
+    navigationItem("/categories"),
+    navigationItem("/rankings"),
+  ];
+  const workLinks = [
+    navigationItem("/workbench"),
+    libraryNavigation,
+    navigationItem("/guide"),
+  ];
+  const siteLinks = [navigationItem("/updates")];
+
   return (
     <footer className="site-footer">
       <div className="footer-desktop">
@@ -56,19 +66,27 @@ export function SiteFooter() {
           <div className="footer-map" aria-label="页脚导航">
             <div>
               <strong>发现</strong>
-              <Link href="/skills">全部 Skill</Link>
-              <Link href="/categories">工作分类</Link>
-              <Link href="/rankings">综合推荐</Link>
+              {discoveryLinks.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  {item.label}
+                </Link>
+              ))}
             </div>
             <div>
               <strong>工作</strong>
-              <Link href="/workbench">任务单生成器</Link>
-              <Link href="/library">我的清单</Link>
-              <Link href="/guide">小白教程</Link>
+              {workLinks.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  {item.label}
+                </Link>
+              ))}
             </div>
             <div>
               <strong>站点</strong>
-              <Link href="/updates">更新记录</Link>
+              {siteLinks.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  {item.label}
+                </Link>
+              ))}
               <Link href="/privacy">隐私说明</Link>
               <Link href="/terms">使用条款</Link>
             </div>
@@ -126,9 +144,9 @@ export function SiteFooter() {
             <ChevronRight aria-hidden="true" size={19} />
           </Link>
 
-          <nav className="footer-mobile-links" aria-label="移动端页脚导航">
-            {mobilePrimaryLinks.map((item) => {
-              const Icon = item.icon;
+          <nav className="footer-mobile-links" aria-label="移动端辅助导航">
+            {footerUtilityNavigation.map((item) => {
+              const Icon = item.href === "/guide" ? GraduationCap : Clock3;
               return (
                 <Link key={item.href} href={item.href}>
                   <Icon aria-hidden="true" size={19} strokeWidth={1.9} />
