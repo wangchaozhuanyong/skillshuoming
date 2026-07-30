@@ -17,6 +17,23 @@ type MatchPayload = {
   source: "本机规则";
 };
 
+function methodNotAllowedResponse() {
+  return Response.json(
+    {
+      error: "请使用 POST 调用工作台匹配接口，提交 JSON：{ goal, input, output, style }",
+      sample: {
+        goal: "我需要给文章自动生成小红书图文",
+        input: "原文内容",
+        output: "9张图片 + 文案",
+      },
+    },
+    {
+      status: 405,
+      headers: { Allow: "POST" },
+    },
+  );
+}
+
 export async function POST(request: Request) {
   let payload: unknown;
   try {
@@ -39,4 +56,8 @@ export async function POST(request: Request) {
     })),
     source: "本机规则",
   } satisfies MatchPayload);
+}
+
+export async function GET() {
+  return methodNotAllowedResponse();
 }

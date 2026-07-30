@@ -77,6 +77,24 @@ function matchForm(form: WorkbenchFormValues, selectedSlug: string) {
   return { matches, brief };
 }
 
+function methodNotAllowedResponse() {
+  return Response.json(
+    {
+      error: "请使用 POST 调用任务单生成接口，提交 JSON：{ goal, selectedSlug }",
+      detail:
+        "支持字段：input/output/style/allowNetwork/allowModify/requireCheck/selectedSlug/useModel",
+      sample: {
+        goal: "我有一篇文章，帮我做 8 张小红书图片",
+        selectedSlug: "meeting-notes-and-actions",
+        allowNetwork: false,
+        allowModify: false,
+        requireCheck: true,
+      },
+    },
+    { status: 405, headers: { Allow: "POST" } },
+  );
+}
+
 function buildModelPrompt(form: WorkbenchFormValues, matches: MatchResult[]) {
   return [
     "你是一名中文 AI 工作台助手。",
@@ -221,4 +239,8 @@ export async function POST(request: Request) {
       } satisfies BriefResponse,
     );
   }
+}
+
+export async function GET() {
+  return methodNotAllowedResponse();
 }
