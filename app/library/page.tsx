@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeader } from "../components/PageHeader";
 import { MyLibrary } from "./MyLibrary";
 
 export const metadata: Metadata = {
@@ -9,15 +10,17 @@ export const metadata: Metadata = {
 export default function LibraryPage() {
   return (
     <main id="main-content" className="library-page">
-      <section className="page-hero page-hero-compact">
-        <div className="container">
-          <p className="eyebrow">MY SKILL DESK</p>
-          <h1>我的 Skill 清单</h1>
-          <p>
-            无需注册。收藏只保存在当前浏览器，清理浏览器数据后会一并删除。
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="我的清单"
+        title="保存在当前浏览器里的 Skill"
+        description="无需注册，也不会上传云端；清理浏览器数据后，本地收藏和最近查看会一并删除。"
+        meta={
+          <>
+            <span>本机保存</span>
+            <span>无需账号</span>
+          </>
+        }
+      />
       <section className="section container">
         <MyLibrary />
       </section>

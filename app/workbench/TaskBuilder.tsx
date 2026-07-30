@@ -12,21 +12,19 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { buildSearchText, getSkillBySlug, skills } from "../data/skills";
+import { PageHeader } from "../components/PageHeader";
+import { getSkillBySlug } from "../data/skills";
+import {
+  buildTaskBrief,
+  runRuleMatch,
+  type WorkbenchFormValues,
+} from "./match-engine";
 
 type TaskBuilderProps = {
   initialSkill: string;
 };
 
-type FormState = {
-  goal: string;
-  input: string;
-  output: string;
-  style: string;
-  allowNetwork: boolean;
-  allowModify: boolean;
-  requireCheck: boolean;
-};
+type FormState = WorkbenchFormValues;
 
 type MobileStep = 1 | 2 | 3;
 
@@ -39,71 +37,6 @@ const defaultForm: FormState = {
   allowModify: false,
   requireCheck: true,
 };
-
-const recommendationRules = [
-  {
-    terms: ["excel", "表格", "公式", "销售", "数据"],
-    slugs: ["spreadsheet-formula-helper", "paperjsx"],
-  },
-  {
-    terms: ["ppt", "汇报", "演示", "幻灯片"],
-    slugs: ["paperjsx"],
-  },
-  {
-    terms: ["小红书", "图卡"],
-    slugs: ["baoyu-xhs-images"],
-  },
-  {
-    terms: ["信息图", "流程图", "图解"],
-    slugs: ["baoyu-infographic"],
-  },
-  {
-    terms: ["文章配图", "公众号配图", "插图"],
-    slugs: ["baoyu-article-illustrator"],
-  },
-  {
-    terms: ["会议", "纪要", "行动项"],
-    slugs: ["meeting-notes-and-actions"],
-  },
-  {
-    terms: ["网站", "网页", "测试"],
-    slugs: ["webapp-testing", "openai-build-web-apps"],
-  },
-  {
-    terms: ["研究", "引用", "资料"],
-    slugs: ["content-research-writer"],
-  },
-] as const;
-
-function recommendSkills(goal: string, selectedSlug: string) {
-  const selected = selectedSlug ? getSkillBySlug(selectedSlug) : undefined;
-  const query = goal.toLowerCase();
-  const ruleSlugs = recommendationRules
-    .filter((rule) => rule.terms.some((term) => query.includes(term)))
-    .flatMap((rule) => rule.slugs);
-  const ruleMatches = ruleSlugs
-    .map((slug) => getSkillBySlug(slug))
-    .filter(Boolean);
-  const textMatches = skills.filter((skill) => {
-    const searchable = buildSearchText(skill);
-    return skill.tags.some(
-      (tag) =>
-        query.includes(tag.toLowerCase()) &&
-        searchable.includes(tag.toLowerCase()),
-    );
-  });
-
-  const matched = [selected, ...ruleMatches, ...textMatches]
-    .filter(Boolean)
-    .filter(
-      (item, index, all) =>
-        all.findIndex((candidate) => candidate?.slug === item?.slug) === index,
-    );
-
-  return matched.length
-    ? matched.slice(0, 2)
-    : skills.filter((item) => item.featured).slice(0, 2);
-}
 
 function createInitialForm(initialSkill: string): FormState {
   const selected = initialSkill ? getSkillBySlug(initialSkill) : undefined;
@@ -126,6 +59,9 @@ export function TaskBuilder({ initialSkill }: TaskBuilderProps) {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">(
     "idle",
   );
+  const [useModel, setUseModel] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [matchProvider, setMatchProvider] = useState("本机规则");
   const [mobileStep, setMobileStep] = useState<MobileStep>(1);
   const [mobileView, setMobileView] = useState<"form" | "result">("form");
   const outputRef = useRef<HTMLElement>(null);
@@ -160,60 +96,61 @@ export function TaskBuilder({ initialSkill }: TaskBuilderProps) {
     return () => window.clearTimeout(timer);
   }, [form]);
 
-  const recommendations = useMemo(
-    () => recommendSkills(form.goal, initialSkill),
-    [form.goal, initialSkill],
+  const matches = useMemo(
+    () => runRuleMatch(form, initialSkill),
+    [form, initialSkill],
   );
 
   function update<Key extends keyof FormState>(key: Key, value: FormState[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  function buildTask(event?: FormEvent<HTMLFormElement>) {
+  async function buildTask(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    const recommendedNames = recommendations.length
-      ? recommendations.map((skill) => `$${skill?.name}`).join("、")
-      : "请根据任务选择最少且合适的 Skill";
 
-    const task = `# Codex 工作任务单
+    const localTaskBrief = buildTaskBrief(form, matches);
+    setGenerated("");
+    setIsGenerating(true);
+    setMatchProvider("本机规则");
 
-## 任务目标
-${form.goal.trim()}
+    try {
+      if (!useModel) {
+        setGenerated(localTaskBrief);
+      } else {
+        const response = await fetch("/api/workbench/task-brief", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            ...form,
+            selectedSlug: initialSkill,
+            useModel: true,
+          }),
+        });
 
-## 输入资料
-${form.input.trim()}
+        if (!response.ok) {
+          setGenerated(localTaskBrief);
+          setMatchProvider("模型接口失败，回退本机规则");
+        } else {
+          try {
+            const payload = (await response.json()) as {
+              brief?: string;
+              provider?: string;
+            };
+            setGenerated(payload.brief || localTaskBrief);
+            setMatchProvider(payload.provider || "本机规则");
+          } catch {
+            setGenerated(localTaskBrief);
+            setMatchProvider("模型响应解析失败，回退本机规则");
+          }
+        }
+      }
+    } catch {
+      setGenerated(localTaskBrief);
+      setMatchProvider("本机规则（降级）");
+    } finally {
+      setIsGenerating(false);
+    }
 
-## 最终交付
-${form.output.trim()}
-
-## 风格与要求
-${form.style.trim()}
-
-## 执行边界
-- 联网：${form.allowNetwork ? "允许，但只访问完成任务所需的公开来源，并记录来源" : "不允许；如果必须联网，先说明原因并等待确认"}
-- 修改原文件：${form.allowModify ? "允许，但修改前先创建可恢复的副本" : "不允许；只读取原文件，结果写入新文件"}
-- 自检：${form.requireCheck ? "必须执行；逐项报告验收结果与未验证风险" : "完成后提供简短结果说明"}
-- 不要编造不存在的接口、字段、账号、数据或配置。
-- 如果关键信息缺失且错误理解会造成返工，只问一个最关键的问题。
-
-## 推荐 Skill
-${recommendedNames}
-
-## 建议执行顺序
-1. 读取输入资料并复述范围，不先修改文件。
-2. 检查输入是否完整，列出缺失项与风险。
-3. 使用最少必要的 Skill 完成任务。
-4. 把结果写入新的输出文件，不覆盖原件。
-5. ${form.requireCheck ? "打开或解析最终文件，检查格式、数字、缺页、溢出和可用性。" : "总结已完成内容。"}
-
-## 验收标准
-- 输出格式与文件数量符合要求。
-- 所有结论能追溯到输入资料或明确来源。
-- 数字、日期、单位和文件名一致。
-- 明确区分“已验证”“未验证”和“需要人工确认”。
-`;
-
-    setGenerated(task);
     setCopyState("idle");
     setMobileView("result");
     window.setTimeout(() => {
@@ -244,21 +181,28 @@ ${recommendedNames}
 
   return (
     <main id="main-content" className="workbench-page">
-      <section className="workbench-hero">
-        <div className="container">
-          <p className="eyebrow">AI 工作台 · 本机工具</p>
-          <h1>把一句想法，整理成 Codex 能执行的任务单</h1>
-          <p>
-            这个工具不会调用模型，也不会把内容上传到本站服务器。生成结果只在当前浏览器中处理。
-          </p>
-          <nav className="workbench-switcher" aria-label="AI 工作台工具">
-            <span className="active">任务单生成器</span>
-            <Link href="/guide#safety">Skill 安全检查教程</Link>
-            <Link href="/categories">Skill 最小组合</Link>
-            <Link href="/library">我的 Skill 清单</Link>
-          </nav>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="AI 工作台 · 本机规则匹配"
+        title="先匹配 Skill，再生成任务单"
+        description="按任务、权限和风险先筛选 2–3 个候选；可选调用模型做重排与措辞增强，本地仅用于展示和生成任务单。"
+        meta={
+          <>
+            <span>本机处理</span>
+            <span>模型不可用自动降级</span>
+          </>
+        }
+      />
+      <div className="container">
+        <nav
+          className="workbench-switcher workbench-switcher-compact"
+          aria-label="AI 工作台工具"
+        >
+          <span className="active">任务匹配与任务单</span>
+          <Link href="/guide#safety">安全检查教程</Link>
+          <Link href="/categories">工作分类</Link>
+          <Link href="/library">我的清单</Link>
+        </nav>
+      </div>
 
       <section className="container task-builder">
         <form
@@ -394,24 +338,60 @@ ${recommendedNames}
 
             <div className="recommendation-box">
               <div>
-                <span>自动建议</span>
-                <strong>最少使用 {recommendations.length || 1} 个 Skill</strong>
+                <span>规则匹配结果</span>
+                <strong>{matches.length} 个候选，按符合程度排序</strong>
+                <small>匹配来源：{matchProvider}</small>
               </div>
-              <div className="recommended-skills">
-                {recommendations.map((skill) =>
-                  skill ? (
-                    <Link key={skill.slug} href={`/skills/${skill.slug}`}>
-                      <span>{skill.category}</span>
-                      <strong>{skill.chineseName}</strong>
-                    </Link>
-                  ) : null,
+              <div className="workbench-match-list">
+                {matches.length > 0 ? (
+                  matches.map(({ skill, reasons, gaps }, index) => (
+                    <article key={skill.slug} className="workbench-match-card">
+                      <div>
+                        <span>
+                          候选 {index + 1} · {skill.category}
+                        </span>
+                        <strong>{skill.chineseName}</strong>
+                      </div>
+                      <p>{reasons[0]}</p>
+                      {gaps.length ? (
+                        <small>{gaps[0]}</small>
+                      ) : (
+                        <small>当前未发现明显条件冲突</small>
+                      )}
+                      <Link href={`/skills/${skill.slug}`}>查看用途与权限</Link>
+                    </article>
+                  ))
+                ) : (
+                  <p className="inline-error">
+                    当前任务尚未匹配到足够候选，将使用可用性更高的默认推荐。
+                  </p>
                 )}
               </div>
             </div>
+
+            <div className="workbench-toggle">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={useModel}
+                  onChange={(event) => setUseModel(event.target.checked)}
+                />
+                <span>
+                  <strong>允许模型增强（可选）</strong>
+                  <small>
+                    不上传文件内容；只根据你已提交的任务文本进行重排和措辞。
+                  </small>
+                </span>
+              </label>
+            </div>
           </div>
 
-          <button type="submit" className="button button-wide desktop-task-submit">
-            生成完整任务单
+          <button
+            type="submit"
+            className="button button-wide desktop-task-submit"
+            disabled={isGenerating}
+          >
+            {isGenerating ? "生成中..." : "生成完整任务单"}
           </button>
 
           <div className="mobile-task-actions">
@@ -439,9 +419,9 @@ ${recommendedNames}
                 <ArrowRight aria-hidden="true" size={18} />
               </button>
             ) : (
-              <button type="submit" className="button">
+              <button type="submit" className="button" disabled={isGenerating}>
                 <Sparkles aria-hidden="true" size={18} />
-                生成任务单
+                {isGenerating ? "生成中..." : "生成任务单"}
               </button>
             )}
           </div>

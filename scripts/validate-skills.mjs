@@ -18,6 +18,7 @@ const requiredTextFields = [
   "output",
   "prompt",
   "installNote",
+  "lastVerifiedAt",
 ];
 
 const requiredListFields = [
@@ -49,6 +50,10 @@ for (const skill of skills) {
 
   if (!categoryNames.has(skill.category)) {
     errors.push(`${skill.slug}: 未知分类 ${skill.category}`);
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(skill.lastVerifiedAt || "")) {
+    errors.push(`${skill.slug}: lastVerifiedAt 格式必须是 YYYY-MM-DD`);
   }
 
   try {

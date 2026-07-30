@@ -39,6 +39,21 @@ async function fetchPage(worker, path) {
   );
 }
 
+async function fetchApi(worker, path, init = {}) {
+  return worker.fetch(
+    new Request(`https://skill-start.example${path}`, {
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(init.body ?? {}),
+    }),
+    environment(),
+    context(),
+  );
+}
+
 test("server-renders the finished homepage with production metadata", async () => {
   const worker = await createWorker();
   const response = await fetchPage(worker, "/");
@@ -50,8 +65,6 @@ test("server-renders the finished homepage with production metadata", async () =
   assert.match(html, /30 秒找到能用的 Skill/);
   assert.match(html, /帮我找 Skill/);
   assert.match(html, /来源链接已核验/);
-  assert.match(html, /还没找到合适的 Skill/);
-  assert.match(html, /立即搜索 Skill/);
   assert.match(html, /第三方中文指南，不代表 OpenAI 官方产品/);
   assert.match(html, /https:\/\/skill-start\.example\/og\.png/);
   assert.doesNotMatch(html, /AI 接口中转/);
@@ -64,11 +77,11 @@ test("renders the directory, detail, workbench, and guide routes", async () => {
   const routes = [
     ["/skills", /Skill 中文目录/],
     ["/skills/baoyu-xhs-images", /小红书图卡生成/],
-    ["/workbench", /Codex 能执行的任务单/],
+    ["/workbench", /先匹配 Skill，再生成任务单/],
     ["/guide", /先弄懂三件事/],
     ["/categories", /已有内容的工作方向/],
     ["/rankings", /推荐不等于适合所有人/],
-    ["/updates", /更新记录讲人话/],
+    ["/updates", /来源、安装和权限哪里变了/],
     ["/library", /我的 Skill 清单/],
   ];
 
@@ -91,9 +104,10 @@ test("keeps responsive and accessibility rules in the finished stylesheet", asyn
   assert.match(css, /\.filter-sheet-backdrop/);
   assert.match(css, /\.task-stepper/);
   assert.match(css, /\.tool-mosaic/);
-  assert.match(css, /\.footer-mobile-cta/);
-  assert.match(css, /\.footer-mobile-links/);
-  assert.match(css, /\.footer-mobile-services/);
+  assert.match(css, /\.footer-mobile-summary/);
+  assert.match(css, /\.footer-mobile-index/);
+  assert.match(css, /\.footer-mobile-legal/);
+  assert.match(css, /\.compact-page-header/);
 });
 
 test("keeps desktop and mobile navigation mapped to the same pages", async () => {
@@ -146,4 +160,55 @@ test("keeps the static catalog honest and GitHub-first", async () => {
   assert.doesNotMatch(detailActions, /标记已安装/);
   assert.match(packageJson, /"check:skills"/);
   assert.match(packageJson, /"check:links"/);
+});
+
+test("workbench rule match api works without database", async () => {
+  const worker = await createWorker();
+  const response = await fetchApi(worker, "/api/workbench/match", {
+    body: {
+      goal: "我需要做一份小红书图文",
+      input: "一篇 1000 字的推广文章",
+      output: "8 张封面图和发布文案",
+      style: "简洁清晰",
+      allowNetwork: false,
+      allowModify: false,
+      requireCheck: true,
+      selectedSlug: "baoyu-xhs-images",
+    },
+  });
+
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+
+  assert.equal(payload.source, "本机规则");
+  assert.ok(Array.isArray(payload.matches) && payload.matches.length > 0);
+  assert.ok(payload.matches.every((item) => item.slug && item.score >= 0));
+});
+
+test("workbench task-brief api supports local-first matching and model fallback", async () => {
+  const worker = await createWorker();
+  const response = await fetchApi(worker, "/api/workbench/task-brief", {
+    body: {
+      goal: "我要分析销售数据生成管理汇报",
+      input: "销售统计表",
+      output: "一份 PPT 与执行清单",
+      style: "简洁",
+      allowNetwork: false,
+      allowModify: false,
+      requireCheck: false,
+      selectedSlug: "paperjsx",
+      useModel: true,
+    },
+  });
+
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+
+  assert.equal(typeof payload.brief, "string");
+  assert.match(payload.brief, /# Codex 工作任务单/);
+  assert.equal(Array.isArray(payload.matches), true);
+  assert.ok(payload.matches.length > 0);
+  assert.ok(
+    /本机规则/.test(payload.provider) || /模型增强/.test(payload.provider),
+  );
 });

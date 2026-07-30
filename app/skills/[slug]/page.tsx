@@ -98,7 +98,9 @@ export default async function SkillDetailPage({ params }: { params: Params }) {
                 来源状态
                 <ChevronDown aria-hidden="true" size={16} />
               </summary>
-              <p>公开来源链接已核验，未作完整安全审计。</p>
+              <p>
+                公开来源链接已核验（{skill.lastVerifiedAt}），未作完整安全审计。未核验部分仍以安装前检查代替。
+              </p>
             </details>
             <a
               href={skill.githubUrl}
@@ -248,10 +250,6 @@ export default async function SkillDetailPage({ params }: { params: Params }) {
               </Link>
             </div>
 
-            <div className="ad-slot">
-              <span>广告 · 预留位置</span>
-              <p>与自然推荐分开显示</p>
-            </div>
           </aside>
         </div>
 

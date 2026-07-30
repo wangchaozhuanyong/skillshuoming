@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import {
   buildSearchText,
   categories,
@@ -206,27 +207,21 @@ export function SkillsExplorer({
 
   return (
     <main id="main-content" className="skills-page">
-      <section className="directory-hero">
-        <div className="container directory-hero-layout">
-          <div>
-            <p className="eyebrow">Skill 中文目录</p>
-            <h1>用工作目标来搜，不用记英文名</h1>
-            <p>
-              当前首发条目来自 OpenAI 官方插件仓库和已核验的公开社区仓库。本站不展示虚构安装量。
-            </p>
-          </div>
-          <div className="directory-facts">
+      <PageHeader
+        eyebrow="Skill 中文目录"
+        title="用工作目标来搜，不用记英文名"
+        description="条目来自已核验的公开仓库；本站只解释用途、来源和使用边界，不展示虚构安装量。"
+        meta={
+          <>
             <span>
-              <strong>{skills.length}</strong>
-              首发条目
+              <strong>{skills.length}</strong> 条已收录
             </span>
             <span>
-              <strong>{availableCategories.length}</strong>
-              已有内容分类
+              <strong>{availableCategories.length}</strong> 个已有分类
             </span>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       <section className="container explorer-shell">
         <button

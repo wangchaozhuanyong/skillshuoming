@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader } from "../components/PageHeader";
 import { siteConfig } from "../data/site";
 
 export const metadata: Metadata = {
@@ -11,28 +12,23 @@ export const metadata: Metadata = {
 export default function GuidePage() {
   return (
     <main id="main-content" className="guide-page">
-      <section className="guide-hero">
-        <div className="container">
-          <p className="eyebrow">5 分钟小白指南</p>
-          <h1>先弄懂三件事，再安装第一个 Skill</h1>
-          <p>
-            Skill 不是“更长的 Prompt”，也不是装得越多越好。它是一套可重复使用的工作说明，还可能附带脚本、模板和工具依赖。
-          </p>
-          <div className="guide-source">
-            <span>
-              内容更新：{siteConfig.contentUpdatedAt} · 来源链接检查：
-              {siteConfig.linkCheckedAt}
-            </span>
+      <PageHeader
+        eyebrow="5 分钟小白指南"
+        title="先弄懂三件事，再安装第一个 Skill"
+        description="Skill 是可重复使用的工作说明，还可能附带脚本、模板和工具依赖；并不是装得越多越好。"
+        meta={
+          <>
+            <span>内容更新 {siteConfig.contentUpdatedAt}</span>
             <a
               href="https://developers.openai.com/codex/skills"
               target="_blank"
               rel="noreferrer"
             >
-              OpenAI 官方 Skill 文档 ↗
+              OpenAI 官方文档 ↗
             </a>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       <div className="container guide-layout">
         <aside className="guide-nav">

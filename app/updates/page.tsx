@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader } from "../components/PageHeader";
 import { skills } from "../data/skills";
 import { siteConfig } from "../data/site";
 
@@ -43,22 +44,17 @@ const changes = [
 export default function UpdatesPage() {
   return (
     <main id="main-content" className="updates-page">
-      <section className="page-hero page-hero-compact">
-        <div className="container page-hero-grid">
-          <div>
-            <p className="eyebrow">UPDATE CENTER</p>
-            <h1>更新记录讲人话：来源、安装和权限哪里变了</h1>
-            <p>
-              这里不堆 Git 提交记录，只展示会影响普通用户选择和使用的变化。
-            </p>
-          </div>
-          <aside className="page-hero-note">
-            <span>最近内容更新</span>
-            <strong>{siteConfig.contentUpdatedAt}</strong>
-            <p>{skills.length} 个来源链接已核验条目，无虚构安装数据。</p>
-          </aside>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="更新记录"
+        title="来源、安装和权限哪里变了"
+        description="只记录会影响普通用户选择和使用的变化，不堆叠无关的 Git 提交。"
+        meta={
+          <>
+            <span>内容更新 {siteConfig.contentUpdatedAt}</span>
+            <span>{skills.length} 条已核验来源</span>
+          </>
+        }
+      />
 
       <section className="section container updates-layout">
         <div className="update-timeline">

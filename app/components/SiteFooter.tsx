@@ -1,16 +1,4 @@
-import {
-  ChevronRight,
-  Clock3,
-  CreditCard,
-  ExternalLink,
-  FileText,
-  GraduationCap,
-  Search,
-  Share2,
-  ShieldCheck,
-  Sparkles,
-  Target,
-} from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import {
   footerUtilityNavigation,
@@ -20,8 +8,8 @@ import {
 import { siteConfig } from "../data/site";
 
 const mobilePolicyLinks = [
-  { href: "/privacy", label: "隐私政策", icon: ShieldCheck },
-  { href: "/terms", label: "使用条款", icon: FileText },
+  { href: "/privacy", label: "隐私政策" },
+  { href: "/terms", label: "使用条款" },
 ];
 
 function navigationItem(href: string) {
@@ -108,104 +96,62 @@ export function SiteFooter() {
 
       <div className="container footer-mobile">
         <div className="footer-mobile-panel">
-          <section className="footer-mobile-cta" aria-labelledby="footer-cta-title">
-            <div className="footer-mobile-cta-heading">
-              <span className="footer-cta-icon" aria-hidden="true">
-                <Target size={23} strokeWidth={2.1} />
+          <section className="footer-mobile-summary">
+            <Link href="/" aria-label="返回技能开工站首页">
+              <span className="brand-mark" aria-hidden="true">
+                S
               </span>
-              <div>
-                <h2 id="footer-cta-title">还没找到合适的 Skill？</h2>
-                <p>说出任务，快速找到能用的 Skill</p>
-              </div>
-            </div>
-            <Link className="footer-search-action" href="/skills">
-              <Search aria-hidden="true" size={21} strokeWidth={2.2} />
-              立即搜索 Skill
+              <span>
+                <strong>技能开工站</strong>
+                <small>Codex Skill 中文说明与任务匹配</small>
+              </span>
             </Link>
-            <Link className="footer-task-action" href="/workbench">
-              <Sparkles aria-hidden="true" size={18} strokeWidth={2} />
-              生成 Codex 任务单
-              <ChevronRight aria-hidden="true" size={17} />
-            </Link>
+            <p>
+              第三方中文指南，不代表 OpenAI 官方产品；公开来源存在不等于安全认证。
+            </p>
           </section>
 
-          <Link
-            className="footer-mobile-brand"
-            href="/"
-            aria-label="返回技能开工站首页"
-          >
-            <span className="brand-mark" aria-hidden="true">
-              S
-            </span>
-            <span>
-              <strong>技能开工站</strong>
-              <small>第三方中文指南，不代表 OpenAI 官方产品</small>
-            </span>
-            <ChevronRight aria-hidden="true" size={19} />
-          </Link>
-
-          <nav className="footer-mobile-links" aria-label="移动端辅助导航">
-            {footerUtilityNavigation.map((item) => {
-              const Icon = item.href === "/guide" ? GraduationCap : Clock3;
-              return (
-                <Link key={item.href} href={item.href}>
-                  <Icon aria-hidden="true" size={19} strokeWidth={1.9} />
-                  <span>{item.label}</span>
-                  <ChevronRight aria-hidden="true" size={16} />
-                </Link>
-              );
-            })}
+          <nav className="footer-mobile-index" aria-label="移动端页脚导航">
+            {footerUtilityNavigation.map((item) => (
+              <Link key={item.href} href={item.href}>
+                {item.label}
+              </Link>
+            ))}
+            {mobilePolicyLinks.map((item) => (
+              <Link key={item.href} href={item.href}>
+                {item.label}
+              </Link>
+            ))}
+            {siteConfig.services.enabled ? (
+              <>
+                <a
+                  href={siteConfig.services.apiUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  AI 接口服务
+                </a>
+                <a
+                  href={siteConfig.services.subscriptionUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  AI 订阅服务
+                </a>
+              </>
+            ) : null}
           </nav>
-
-          <div className="footer-mobile-services">
-            <p>{siteConfig.services.enabled ? "服务与政策" : "站点政策"}</p>
-            <nav aria-label="移动端服务与政策">
-              {siteConfig.services.enabled ? (
-                <>
-                  <a
-                    href={siteConfig.services.apiUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <Share2 aria-hidden="true" size={19} strokeWidth={1.8} />
-                    <span>AI 接口中转</span>
-                  </a>
-                  <a
-                    href={siteConfig.services.subscriptionUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <CreditCard
-                      aria-hidden="true"
-                      size={19}
-                      strokeWidth={1.8}
-                    />
-                    <span>AI 订阅协助</span>
-                  </a>
-                </>
-              ) : null}
-              {mobilePolicyLinks.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link key={item.href} href={item.href}>
-                    <Icon aria-hidden="true" size={19} strokeWidth={1.8} />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
 
           <div className="footer-mobile-legal">
             <span>© 2026 技能开工站</span>
-            <span>链接检查 {siteConfig.linkCheckedAt}</span>
+            <span>链接核验 {siteConfig.linkCheckedAt}</span>
             <a
               href="https://github.com/wangchaozhuanyong/skillshuoming"
               target="_blank"
               rel="noreferrer"
             >
-              GitHub 源地址
-              <ExternalLink aria-hidden="true" size={13} />
+              项目源码
+              <ExternalLink aria-hidden="true" size={12} />
             </a>
           </div>
         </div>
